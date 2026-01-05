@@ -1,8 +1,12 @@
 package main;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import enums.Role;
+import fileio.TicketInput.ActionInput;
+import fileio.UserInput.UserInput;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,11 +34,9 @@ public class App {
      * @param outputPath path to the file where results should be written
      */
     public static void run(final String inputPath, final String outputPath) {
-        // feel free to change this if needed
-        // however keep 'outputs' variable name to be used for writing
+        //keep 'outputs' variable name to be used for writing
         List<ObjectNode> outputs = new ArrayList<>();
         ObjectMapper mapper = new ObjectMapper();
-        TicketManager manager = new TicketManger();
 
         /*
             TODO 1 :
@@ -44,7 +46,82 @@ public class App {
             jackson library, available here: https://www.baeldung.com/jackson-annotations
         */
 
+        //reading and loading the users
+        UserManger userManger = new UserManger();
+
+        try {
+            List<UserInput> usersInput = mapper.readValue(
+                    new File(INPUT_USERS_FIELD),
+                    new TypeReference<>() {
+                    }
+            );
+            userManger.loadUsers(usersInput);
+
+        } catch (IOException e) {
+            System.err.println("Eroare la încărcarea bazei de date de utilizatori: " + e.getMessage());
+            return;
+        }
+
+
+        //reading the input of the tests
+        List<ActionInput> actionInputs = new ArrayList<>();
+
+        try {
+            actionInputs = mapper.readValue(
+                    new File(inputPath),
+                    new TypeReference<>() {
+                    }
+            );
+        } catch (IOException e) {
+            System.err.println("Nu s-a putut citi fișierul de acțiuni: " + e.getMessage());
+        }
+
         // TODO 2: process commands.
+        TicketManager ticketManager = new TicketManager();
+
+        for (ActionInput actionInput : actionInputs) {
+            try {
+                ObjectNode response = mapper.createObjectNode();
+                response.put("command", actionInput.getCommand());
+                response.put("username", actionInput.getUsername());
+                response.put("timestamp", actionInput.getTimestamp());
+
+                int addRepoToOut = 1;
+
+                switch (actionInput.getCommand()) {
+                    case "viewTickets" -> {
+                        ticketManager.ViewTicket(actionInput, userManger,response, mapper);
+                    }
+                    case "reportTicket" -> {
+                        String error = ticketManager.reportTicket(actionInput, userManger, response);
+                        if (error != null) {
+                            response.put("error", error);
+                        }
+                        else  {
+                            addRepoToOut = 0;
+                        }
+                    }
+                    case "lostInvestors" -> {
+                        Role role = userManger.getRole(actionInput.getUsername());
+                        if (!Role.MANAGER.equals(role)) {
+                            response.put("error", "Only managers can execute this command.");
+                        }
+                        else {
+                            addRepoToOut = 0;
+                        }
+                    }
+                    default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
+                }
+
+                if (addRepoToOut > 0) {
+                    outputs.add(response);
+                }
+
+            } catch (Exception e) {
+                System.err.println("Eroare la procesarea comenzii " + actionInput.getCommand() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
 
         // TODO 3: create objectnodes for output, add them to outputs list.
 

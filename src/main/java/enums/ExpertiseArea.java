@@ -5,5 +5,6 @@ public enum ExpertiseArea {
     BACKEND,
     DEVOPS,
     DESIGN,
-    DB
+    DB,
+    FULLSTACK
 }

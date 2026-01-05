@@ -1,4 +1,4 @@
-package fileio;
+package fileio.TicketInput;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import enums.Frequency;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public final class BugInput extends ParamsInput {
     private String expectedBehavior;
