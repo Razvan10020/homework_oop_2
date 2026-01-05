@@ -33,7 +33,8 @@ public class App {
         // feel free to change this if needed
         // however keep 'outputs' variable name to be used for writing
         List<ObjectNode> outputs = new ArrayList<>();
-
+        ObjectMapper mapper = new ObjectMapper();
+        TicketManager manager = new TicketManger();
 
         /*
             TODO 1 :
