@@ -66,7 +66,7 @@ public class TicketManager {
                            ObjectNode response, ObjectMapper mapper) {
         Role role = userManger.getRole(actionInput.getUsername());
         ArrayNode arrayNode = mapper.createArrayNode();
-
+        //
         // daca e reporter, lista e goala
         if (Role.REPORTER.equals(role)) {
             response.set("tickets", arrayNode);
