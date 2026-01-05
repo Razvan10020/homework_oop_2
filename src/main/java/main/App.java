@@ -34,6 +34,7 @@ public class App {
         // however keep 'outputs' variable name to be used for writing
         List<ObjectNode> outputs = new ArrayList<>();
 
+
         /*
             TODO 1 :
             Load initial user data and commands. we strongly recommend using jackson library.
