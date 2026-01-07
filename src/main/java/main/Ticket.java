@@ -2,11 +2,10 @@ package main;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import enums.BusinessPriority;
 import enums.ExpertiseArea;
 import enums.Status;
-import fileio.TicketInput.ActionInput;
+import fileio.ActionInput;
 import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,12 +36,12 @@ public class Ticket {
     private List<String> comments = new ArrayList<>();
 
     public Ticket(final int id, final ActionInput actionInput) {
-        this.type = actionInput.getParams().getType();
-        this.title = actionInput.getParams().getTitle();
-        this.businessPriority = actionInput.getParams().getBusinessPriority();
-        this.expertiseArea = actionInput.getParams().getExpertiseArea();
-        this.description = actionInput.getParams().getDescription();
-        this.reportedBy = actionInput.getParams().getReportedBy();
+        this.type = actionInput.asParams().getType();
+        this.title = actionInput.asParams().getTitle();
+        this.businessPriority = actionInput.asParams().getBusinessPriority();
+        this.expertiseArea = actionInput.asParams().getExpertiseArea();
+        this.description = actionInput.asParams().getDescription();
+        this.reportedBy = actionInput.asParams().getReportedBy();
         this.id = id;
 
         this.createdAt = actionInput.getTimestamp();

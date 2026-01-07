@@ -1,9 +1,9 @@
 package main;
 
 import enums.Role;
-import fileio.UserInput.DeveloperInput;
-import fileio.UserInput.ManagerInput;
-import fileio.UserInput.UserInput;
+import fileio.UserInputP.DeveloperInput;
+import fileio.UserInputP.ManagerInput;
+import fileio.UserInput;
 import main.Users.Developer;
 import main.Users.Manager;
 import main.Users.User;

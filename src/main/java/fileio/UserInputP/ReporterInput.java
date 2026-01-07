@@ -1,6 +1,7 @@
-package fileio.UserInput;
+package fileio.UserInputP;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import fileio.UserInput;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;

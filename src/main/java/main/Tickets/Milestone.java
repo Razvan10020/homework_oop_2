@@ -1,0 +1,87 @@
+package main.Tickets;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import enums.Role;
+import enums.Status;
+import fileio.ActionInput;
+import lombok.Data;
+import main.UserManger;
+import main.Users.Developer;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+@JsonPropertyOrder({
+        "name", "blockingFor", "dueDate", "createdAt", "tickets",
+        "assignedDevs", "createdBy", "status", "isBlocked",
+        "daysUntilDue", "overdueBy", "openTickets", "closedTickets",
+        "completionPercentage", "repartition"
+})
+public class Milestone {
+    //entry data
+    private String name;
+    private String[] blockingFor;
+    private String dueDate;
+    private int[] tickets;
+    private String[] assignedDevs;
+
+    //created data
+    private String createdAt;
+    private String createdBy;
+    private Status status;
+    private boolean isBlocked;
+    private int daysUntilDue;
+    private int overdueBy;
+    private List<Integer> openTickets;
+    private List<Integer> closedTickets;
+    private double completionPercentage;
+    private List<String> repartition;
+
+    @JsonIgnore
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    public Milestone(ActionInput actionInput, UserManger userManger) {
+        this.name = actionInput.asMilestone().getName();
+        this.blockingFor = actionInput.asMilestone().getBlockingFor();
+        this.dueDate = actionInput.asMilestone().getDueDate();
+        this.tickets = actionInput.asMilestone().getTickets();
+        this.assignedDevs = actionInput.asMilestone().getAssignedDevs();
+
+        this.createdAt = actionInput.getTimestamp();
+        this.createdBy = actionInput.getUsername();
+        this.status = Status.OPEN;
+        this.isBlocked = false;
+
+        //procesarea datelor de timp
+        LocalDate dueDateParsed = LocalDate.parse(this.dueDate, formatter);
+        LocalDate currentDate = LocalDate.parse(actionInput.getTimestamp(), formatter);
+        this.daysUntilDue = Math.toIntExact(ChronoUnit.DAYS.between(currentDate, currentDate));
+        this.overdueBy = 0;
+
+        this.openTickets = new ArrayList<>();
+        this.closedTickets = new ArrayList<>();
+
+        if (this.tickets != null) {
+            for (int ticketId : this.tickets) {
+                this.openTickets.add(ticketId);
+            }
+        }
+
+        this.completionPercentage = 0.0;
+        this.repartition = new ArrayList<>();
+        if (this.assignedDevs != null) {
+            for (String devName : this.assignedDevs) {
+                if(userManger.userExists(devName)
+                        && Role.DEVELOPER.equals(userManger.getRole(devName))) {
+                    this.repartition.add(devName);
+                }
+            }
+        }
+    }
+
+}

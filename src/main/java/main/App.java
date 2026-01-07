@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import enums.Role;
-import fileio.TicketInput.ActionInput;
-import fileio.UserInput.UserInput;
+import fileio.ActionInput;
+import fileio.UserInput;
 
 import java.io.File;
 import java.io.IOException;
@@ -109,6 +109,18 @@ public class App {
                         else {
                             addRepoToOut = 0;
                         }
+                    }
+                    case "createMilestone" -> {
+                        String error = ticketManager.createMilestone(actionInput, userManger, response);
+                        if (error != null) {
+                            response.put("error", error);
+                        }
+                        else  {
+                            addRepoToOut = 0;
+                        }
+                    }
+                    case "viewMilestones" -> {
+                        ticketManager.ViewMilestones(actionInput, userManger,response, mapper);
                     }
                     default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
                 }

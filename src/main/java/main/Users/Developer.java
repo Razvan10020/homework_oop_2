@@ -2,8 +2,8 @@ package main.Users;
 
 import enums.ExpertiseArea;
 import enums.Seniority;
-import fileio.UserInput.DeveloperInput;
-import fileio.UserInput.UserInput;
+import fileio.UserInputP.DeveloperInput;
+import fileio.UserInput;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

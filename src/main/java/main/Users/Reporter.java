@@ -1,7 +1,6 @@
 package main.Users;
 
-import enums.Role;
-import fileio.UserInput.UserInput;
+import fileio.UserInput;
 
 public class Reporter extends User{
 

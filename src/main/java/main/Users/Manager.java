@@ -1,7 +1,7 @@
 package main.Users;
 
-import fileio.UserInput.ManagerInput;
-import fileio.UserInput.UserInput;
+import fileio.UserInputP.ManagerInput;
+import fileio.UserInput;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

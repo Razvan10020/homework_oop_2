@@ -1,7 +1,7 @@
 package main.Users;
 
 import enums.Role;
-import fileio.UserInput.UserInput;
+import fileio.UserInput;
 import lombok.Data;
 
 @Data

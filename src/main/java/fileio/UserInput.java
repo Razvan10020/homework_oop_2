@@ -1,9 +1,10 @@
-package fileio.UserInput;
+package fileio;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import enums.Role;
+import fileio.UserInputP.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
