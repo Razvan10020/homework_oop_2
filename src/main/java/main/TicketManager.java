@@ -10,13 +10,17 @@ import main.Tickets.Milestone;
 import main.Tickets.TestingPhase;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class TicketManager {
     private TestingPhase testingPhase = new TestingPhase();
     private final List<Ticket> tickets = new ArrayList<>();
     private final List<Milestone> milestones = new ArrayList<>();
+    private final ArrayNode emptyArray =  new ObjectMapper().createArrayNode();
     private int ticketIdCounter = 0;
 
     /**
@@ -87,8 +91,26 @@ public class TicketManager {
 
     public String createMilestone(ActionInput actionInput, UserManger userManger,
                                   ObjectNode response) {
+        if (!LocalDate.parse(actionInput.getTimestamp()).isAfter(testingPhase.getTestingPhaseEndDate())) {
+            return "Milestones can only be created after a testing phase has ended.";
+        }
+
         Milestone milestone = new Milestone(actionInput, userManger);
         milestones.add(milestone);
+        milestones.sort(
+                Comparator.comparing(e ->
+                        LocalDate.parse(e.getDueDate(), testingPhase.getFormatter())
+        ));
+
+        if (milestone.getBlockingFor() != null) {
+            for (String blockingFor : milestone.getBlockingFor()) {
+                milestones.stream()
+                        .filter(e -> blockingFor.equals(e.getName()))
+                        .findFirst().ifPresent(e -> {
+                            e.setBlocked(true);
+                        });
+            }
+        }
         return null;
     }
 
@@ -96,10 +118,36 @@ public class TicketManager {
                                ObjectNode response, ObjectMapper mapper) {
         ArrayNode milestonesArray = mapper.createArrayNode();
 
+        updateMilestones(milestones, LocalDate.parse(actionInput.getTimestamp()));
+
+        if (Role.REPORTER.equals(userManger.getRole(actionInput.getUsername()))) {
+            response.set("milestones", emptyArray);
+            return;
+        }
+
+        Role role = userManger.getRole(actionInput.getUsername());
+
         for (Milestone m : milestones) {
-            milestonesArray.add(mapper.valueToTree(m));
+            if (Role.MANAGER.equals(role) && m.getCreatedBy().equals(actionInput.getUsername())) {
+                milestonesArray.add(mapper.valueToTree(m));
+            }
+
+            if (Role.DEVELOPER.equals(role)
+                    && Arrays.asList(m.getAssignedDevs()).contains(actionInput.getUsername())) {
+                milestonesArray.add(mapper.valueToTree(m));
+            }
         }
         response.set("milestones", milestonesArray);
     }
 
+    public void updateMilestones(List<Milestone> milestones, LocalDate currentDate) {
+        for (Milestone milestone : milestones) {
+            LocalDate dueDateParsed = LocalDate.parse(milestone.getDueDate(), testingPhase.getFormatter());
+            milestone.setDaysUntilDue(
+                    Math.toIntExact(
+                            ChronoUnit.DAYS.between(currentDate, dueDateParsed)) + 1
+            );
+        }
+
+    }
 }

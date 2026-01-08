@@ -4,5 +4,8 @@ public enum Status {
     OPEN,
     IN_PROGRESS,
     RESOLVED,
-    CLOSED
+    CLOSED,
+
+    //Status for milestones
+    ACTIVE
 }

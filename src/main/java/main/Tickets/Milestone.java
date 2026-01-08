@@ -1,13 +1,17 @@
 package main.Tickets;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import enums.Role;
 import enums.Status;
 import fileio.ActionInput;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import main.UserManger;
 import main.Users.Developer;
+import main.Users.DeveloperRepartition;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -34,13 +38,14 @@ public class Milestone {
     private String createdAt;
     private String createdBy;
     private Status status;
-    private boolean isBlocked;
+    @JsonProperty("isBlocked")
+    private boolean blocked;
     private int daysUntilDue;
     private int overdueBy;
     private List<Integer> openTickets;
     private List<Integer> closedTickets;
     private double completionPercentage;
-    private List<String> repartition;
+    private List<DeveloperRepartition> repartition;
 
     @JsonIgnore
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -54,13 +59,13 @@ public class Milestone {
 
         this.createdAt = actionInput.getTimestamp();
         this.createdBy = actionInput.getUsername();
-        this.status = Status.OPEN;
-        this.isBlocked = false;
+        this.status = Status.ACTIVE;
+        this.blocked = false;
 
         //procesarea datelor de timp
         LocalDate dueDateParsed = LocalDate.parse(this.dueDate, formatter);
         LocalDate currentDate = LocalDate.parse(actionInput.getTimestamp(), formatter);
-        this.daysUntilDue = Math.toIntExact(ChronoUnit.DAYS.between(currentDate, currentDate));
+        this.daysUntilDue = Math.toIntExact(ChronoUnit.DAYS.between(currentDate, dueDateParsed));
         this.overdueBy = 0;
 
         this.openTickets = new ArrayList<>();
@@ -73,15 +78,15 @@ public class Milestone {
         }
 
         this.completionPercentage = 0.0;
+
         this.repartition = new ArrayList<>();
         if (this.assignedDevs != null) {
             for (String devName : this.assignedDevs) {
                 if(userManger.userExists(devName)
                         && Role.DEVELOPER.equals(userManger.getRole(devName))) {
-                    this.repartition.add(devName);
+                    this.repartition.add(new DeveloperRepartition(devName));
                 }
             }
         }
     }
-
 }
