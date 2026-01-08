@@ -11,10 +11,8 @@ import main.Tickets.TestingPhase;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class TicketManager {
     private TestingPhase testingPhase = new TestingPhase();
@@ -22,6 +20,13 @@ public class TicketManager {
     private final List<Milestone> milestones = new ArrayList<>();
     private final ArrayNode emptyArray =  new ObjectMapper().createArrayNode();
     private int ticketIdCounter = 0;
+
+    //crearea unei harti a ticketelor bazata pe id
+    Map<Integer, Ticket> ticketIdMap = tickets.stream()
+            .collect(Collectors.toMap(
+                    Ticket::getId,
+                    ticket -> ticket
+            ));
 
     /**
      * Raporteaza un ticket. Returneaza mesaj de eroare daca e cazul,
@@ -57,6 +62,7 @@ public class TicketManager {
         }
 
         tickets.add(ticket);
+        ticketIdMap.put(ticket.getId(), ticket);
 
         return null; // totul ok
     }
@@ -68,7 +74,7 @@ public class TicketManager {
                            ObjectNode response, ObjectMapper mapper) {
         Role role = userManger.getRole(actionInput.getUsername());
         ArrayNode arrayNode = mapper.createArrayNode();
-        //
+
         // daca e reporter, lista e goala
         if (Role.REPORTER.equals(role)) {
             response.set("tickets", arrayNode);
@@ -78,6 +84,9 @@ public class TicketManager {
         // altfel, returneaza doar ticketele create pana la timestamp-ul actiunii
         ArrayNode ticketsArray = mapper.createArrayNode();
         LocalDate actionDate = LocalDate.parse(actionInput.getTimestamp(), testingPhase.getFormatter());
+
+        //update tickets daca tot
+        updateTickets(tickets, actionDate);
 
         for (Ticket t : tickets) {
             LocalDate ticketDate = LocalDate.parse(t.getCreatedAt(), testingPhase.getFormatter());
@@ -91,8 +100,31 @@ public class TicketManager {
 
     public String createMilestone(ActionInput actionInput, UserManger userManger,
                                   ObjectNode response) {
+        //verifica daca s-a terminat testing phase-ul
         if (!LocalDate.parse(actionInput.getTimestamp()).isAfter(testingPhase.getTestingPhaseEndDate())) {
             return "Milestones can only be created after a testing phase has ended.";
+        }
+
+        //verifica rolurile pentru user
+        Role role = userManger.getRole(actionInput.getUsername());
+
+        if (!Role.MANAGER.equals(role)) {
+            return "The user does not have permission to execute this command: required role MANAGER; user role " + role.toString() +".";
+        }
+
+        //verifica daca ticketul din milstoneInput se afla in alt milestone
+        if (actionInput.asMilestone().getTickets() != null) {
+            for (Integer i : actionInput.asMilestone().getTickets()) {
+                if (!ticketIdMap.containsKey(i)) {
+                    return "Ticket " + i + " does not exist.";
+                }
+
+                if (ticketIdMap.containsKey(i)
+                        && !ticketIdMap.get(i).getAssignedMilestone().equals("")) {
+                    String s = "Tickets " + i + " already assigned to milestone " + ticketIdMap.get(i).getAssignedMilestone() + ".";
+                    return s;
+                }
+            }
         }
 
         Milestone milestone = new Milestone(actionInput, userManger);
@@ -111,6 +143,17 @@ public class TicketManager {
                         });
             }
         }
+
+        //schimbarea assignet to a ticketului odaca cu crearea milestonului
+        //inceperea datei de schimbare a prioritatii de bussines
+        if (milestone.getTickets() != null) {
+            for (Integer i : milestone.getTickets()) {
+                ticketIdMap.get(i).setLastUpdatedDay(milestone.getCreatedAt());
+                ticketIdMap.get(i).setAssignedMilestone(milestone.getName());
+            }
+        }
+
+
         return null;
     }
 
@@ -143,11 +186,50 @@ public class TicketManager {
     public void updateMilestones(List<Milestone> milestones, LocalDate currentDate) {
         for (Milestone milestone : milestones) {
             LocalDate dueDateParsed = LocalDate.parse(milestone.getDueDate(), testingPhase.getFormatter());
+
             milestone.setDaysUntilDue(
                     Math.toIntExact(
                             ChronoUnit.DAYS.between(currentDate, dueDateParsed)) + 1
             );
         }
 
+    }
+
+    public void updateTickets (List<Ticket> tickets, LocalDate currentDate) {
+        for (Ticket ticket : tickets) {
+            if (ticket.getLastUpdatedDay() == null) {
+                ticket.setLastUpdatedDay(currentDate.format(testingPhase.getFormatter()));
+            }
+
+
+            LocalDate lastUpdatedDay = LocalDate.parse(ticket.getLastUpdatedDay(), testingPhase.getFormatter());
+            Integer daysBetween = Math.toIntExact(ChronoUnit.DAYS.between(lastUpdatedDay, currentDate))
+                                + ticket.getChangeDaysAgo();
+            System.out.println("---Pentru-ticketul-cu-numele: " + ticket.getId());
+            while (daysBetween >= 3) {
+                System.out.println("---PRIORITY---" + ticket.getBusinessPriority());
+                if (ticket.getBusinessPriority() == BusinessPriority.CRITICAL) {
+                    daysBetween = 0;
+                    break;
+                }
+
+                switch (ticket.getBusinessPriority()) {
+                    case LOW ->  {
+                        ticket.setBusinessPriority(BusinessPriority.MEDIUM);
+                    }
+                    case MEDIUM -> {
+                        ticket.setBusinessPriority(BusinessPriority.HIGH);
+                    }
+                    case  HIGH ->  {
+                        ticket.setBusinessPriority(BusinessPriority.CRITICAL);
+                    }
+                    default -> {}
+
+                }
+                daysBetween -= 3;
+            }
+            ticket.setLastUpdatedDay(currentDate.format(testingPhase.getFormatter()));
+            ticket.setChangeDaysAgo(daysBetween);
+        }
     }
 }

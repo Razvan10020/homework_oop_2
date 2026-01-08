@@ -7,6 +7,8 @@ import enums.ExpertiseArea;
 import enums.Status;
 import fileio.ActionInput;
 import lombok.Data;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,10 @@ public class Ticket {
     private final String title;
     private BusinessPriority businessPriority;
     @JsonIgnore
+    private int changeDaysAgo = 0;
+    @JsonIgnore
+    private String lastUpdatedDay;
+    @JsonIgnore
     private final ExpertiseArea expertiseArea;
     @JsonIgnore
     private final String description;
@@ -33,6 +39,8 @@ public class Ticket {
     private String assignedAt = "";
     private String solvedAt = "";
     private String assignedTo = "";
+    @JsonIgnore
+    private String assignedMilestone = "";
     private List<String> comments = new ArrayList<>();
 
     public Ticket(final int id, final ActionInput actionInput) {
@@ -46,6 +54,10 @@ public class Ticket {
 
         this.createdAt = actionInput.getTimestamp();
         this.status = Status.OPEN;
+    }
+
+    public void assignTo(final String assignedTo) {
+        this.assignedTo = assignedTo;
     }
 
 }
