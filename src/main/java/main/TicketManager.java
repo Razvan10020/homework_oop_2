@@ -134,12 +134,19 @@ public class TicketManager {
                         LocalDate.parse(e.getDueDate(), testingPhase.getFormatter())
         ));
 
+        //adaugarea blocked
         if (milestone.getBlockingFor() != null) {
             for (String blockingFor : milestone.getBlockingFor()) {
                 milestones.stream()
                         .filter(e -> blockingFor.equals(e.getName()))
                         .findFirst().ifPresent(e -> {
+                            //e este milestonul blocat
                             e.setBlocked(true);
+                            for (Integer i : e.getTickets()) {
+                                if (ticketIdMap.containsKey(i)) {
+                                    ticketIdMap.get(i).setBlockedDate(actionInput.getTimestamp());
+                                }
+                            }
                         });
             }
         }
@@ -185,12 +192,15 @@ public class TicketManager {
 
     public void updateMilestones(List<Milestone> milestones, LocalDate currentDate) {
         for (Milestone milestone : milestones) {
-            LocalDate dueDateParsed = LocalDate.parse(milestone.getDueDate(), testingPhase.getFormatter());
+            LocalDate due = LocalDate.parse(milestone.getDueDate(), testingPhase.getFormatter());
 
-            milestone.setDaysUntilDue(
-                    Math.toIntExact(
-                            ChronoUnit.DAYS.between(currentDate, dueDateParsed)) + 1
-            );
+            if (currentDate.isAfter(due)) {
+                milestone.setDaysUntilDue(0);
+                milestone.setOverdueBy((int) ChronoUnit.DAYS.between(due, currentDate) + 1);
+            } else {
+                milestone.setDaysUntilDue((int) ChronoUnit.DAYS.between(currentDate, due) + 1);
+                milestone.setOverdueBy(0);
+            }
         }
 
     }
@@ -201,15 +211,35 @@ public class TicketManager {
                 ticket.setLastUpdatedDay(currentDate.format(testingPhase.getFormatter()));
             }
 
+            Milestone parent = milestones.stream()
+                    .filter(m -> m.getName().equals(ticket.getAssignedMilestone()))
+                    .findFirst().orElse(null);
+
+            if (parent != null && parent.isBlocked()) {
+                ticket.setLastUpdatedDay(currentDate.format(testingPhase.getFormatter()));
+                continue;
+            }
 
             LocalDate lastUpdatedDay = LocalDate.parse(ticket.getLastUpdatedDay(), testingPhase.getFormatter());
-            Integer daysBetween = Math.toIntExact(ChronoUnit.DAYS.between(lastUpdatedDay, currentDate))
-                                + ticket.getChangeDaysAgo();
-            System.out.println("---Pentru-ticketul-cu-numele: " + ticket.getId());
-            while (daysBetween >= 3) {
-                System.out.println("---PRIORITY---" + ticket.getBusinessPriority());
+
+            int daysPassed = (int) ChronoUnit.DAYS.between(lastUpdatedDay, currentDate);
+            int totalDaysAvailable = daysPassed + ticket.getChangeDaysAgo();;
+
+            if (parent != null) {
+                LocalDate dueDate = LocalDate.parse(parent.getDueDate(), testingPhase.getFormatter());
+                int diffToDue = (int) ChronoUnit.DAYS.between(currentDate, dueDate) + 1;
+
+                if (diffToDue <= 1) {
+                    ticket.setBusinessPriority(BusinessPriority.CRITICAL);
+                    totalDaysAvailable = 0;
+                } else if (diffToDue == 2) {
+                    ticket.setBusinessPriority(BusinessPriority.CRITICAL);
+                    totalDaysAvailable = 0;
+                }
+            }
+            while (totalDaysAvailable >= 3) {
                 if (ticket.getBusinessPriority() == BusinessPriority.CRITICAL) {
-                    daysBetween = 0;
+                    totalDaysAvailable= 0;
                     break;
                 }
 
@@ -226,10 +256,10 @@ public class TicketManager {
                     default -> {}
 
                 }
-                daysBetween -= 3;
+                totalDaysAvailable -= 3;
             }
             ticket.setLastUpdatedDay(currentDate.format(testingPhase.getFormatter()));
-            ticket.setChangeDaysAgo(daysBetween);
+            ticket.setChangeDaysAgo(totalDaysAvailable);
         }
     }
 }

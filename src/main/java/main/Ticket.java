@@ -23,10 +23,15 @@ public class Ticket {
     private final String type;
     private final String title;
     private BusinessPriority businessPriority;
+
+    //update tickets variables
     @JsonIgnore
     private int changeDaysAgo = 0;
     @JsonIgnore
     private String lastUpdatedDay;
+    @JsonIgnore
+    private String blockedDate;
+
     @JsonIgnore
     private final ExpertiseArea expertiseArea;
     @JsonIgnore
