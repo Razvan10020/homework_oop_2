@@ -2,13 +2,14 @@ package main;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonView;
 import enums.BusinessPriority;
 import enums.ExpertiseArea;
 import enums.Status;
 import fileio.ActionInput;
 import lombok.Data;
+import main.utils.Views;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +21,11 @@ import java.util.List;
 })
 public class Ticket {
     //luate din input
+    @JsonView(Views.AssignedTicketView.class)
     private final String type;
+    @JsonView(Views.AssignedTicketView.class)
     private final String title;
+    @JsonView(Views.AssignedTicketView.class)
     private BusinessPriority businessPriority;
 
     //update tickets variables
@@ -36,17 +40,30 @@ public class Ticket {
     private final ExpertiseArea expertiseArea;
     @JsonIgnore
     private final String description;
+    @JsonView(Views.AssignedTicketView.class)
     private final String reportedBy;
     //folosite pentru logica
+    @JsonView(Views.AssignedTicketView.class)
     private final int id;
+    @JsonView(Views.AssignedTicketView.class)
     private Status status;
+    @JsonView(Views.AssignedTicketView.class)
     private String createdAt;
+
+    @JsonView(Views.AssignedTicketView.class)
     private String assignedAt = "";
+    @JsonView(Views.GeneralTicketView.class)
     private String solvedAt = "";
+    @JsonView(Views.GeneralTicketView.class)
     private String assignedTo = "";
     @JsonIgnore
     private String assignedMilestone = "";
+    @JsonView(Views.AssignedTicketView.class)
     private List<String> comments = new ArrayList<>();
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
     public Ticket(final int id, final ActionInput actionInput) {
         this.type = actionInput.asParams().getType();

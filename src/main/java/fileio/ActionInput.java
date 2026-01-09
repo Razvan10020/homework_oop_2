@@ -2,6 +2,7 @@ package fileio;
 
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fileio.ActionComsIn.AssignTicketInput;
 import fileio.ActionComsIn.MilestoneInput;
 import fileio.TicketInput.ParamsInput;
 import lombok.Data;
@@ -54,6 +55,17 @@ public final class ActionInput {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.convertValue(otherProps, MilestoneInput.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public AssignTicketInput asAssignTicket() {
+        if (!"assignTicket".equals(command) && !"undoAssignTicket".equals(command)) return null;
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.convertValue(otherProps, AssignTicketInput.class);
         } catch (Exception e) {
             return null;
         }

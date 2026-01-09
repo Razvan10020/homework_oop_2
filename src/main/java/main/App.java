@@ -26,6 +26,10 @@ public class App {
     private static final ObjectWriter WRITER =
             new ObjectMapper().writer().withDefaultPrettyPrinter();
 
+    public static void main(String[] args) {
+        run("input/in_04_test_assign.json", "out/out_04_test_assign.json");
+    }
+
     /**
      * Runs the application: reads commands from an input file,
      * processes them, generates results, and writes them to an output file
@@ -121,6 +125,27 @@ public class App {
                     }
                     case "viewMilestones" -> {
                         ticketManager.ViewMilestones(actionInput, userManger,response, mapper);
+                    }
+                    case "assignTicket" -> {
+                        String error = ticketManager.assignTicket(actionInput, userManger, response);
+                        if (error != null) {
+                            response.put("error", error);
+                        }
+                        else  {
+                            addRepoToOut = 0;
+                        }
+                    }
+                    case "undoAssignTicket" -> {
+                        String error = ticketManager.undoAssignTicket(actionInput, userManger, response);
+                        if (error != null) {
+                            response.put("error", error);
+                        }
+                        else  {
+                            addRepoToOut = 0;
+                        }
+                    }
+                    case "viewAssignedTickets" -> {
+                        ticketManager.ViewAssignedTickets(actionInput, userManger,response, mapper);
                     }
                     default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
                 }

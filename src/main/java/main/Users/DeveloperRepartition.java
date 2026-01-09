@@ -13,4 +13,9 @@ public class DeveloperRepartition {
     public DeveloperRepartition(String developer) {
         this.developer = developer;
     }
+
+    public DeveloperRepartition(String developer, int ticketId) {
+        this.developer = developer;
+        this.assignedTickets.add(ticketId);
+    }
 }
