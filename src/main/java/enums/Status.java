@@ -7,5 +7,6 @@ public enum Status {
     CLOSED,
 
     //Status for milestones
-    ACTIVE
+    ACTIVE,
+    COMPLETED
 }
