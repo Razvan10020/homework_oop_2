@@ -10,8 +10,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper=true)
-@JsonAutoDetect(fieldVisibility=JsonAutoDetect.Visibility.ANY)
+@EqualsAndHashCode(callSuper = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class DeveloperInput extends UserInput {
     private String hireDate;
     private ExpertiseArea expertiseArea;

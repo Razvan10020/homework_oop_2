@@ -47,7 +47,7 @@ public class Milestone {
     @JsonIgnore
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public Milestone(ActionInput actionInput, UserManger userManger) {
+    public Milestone(final ActionInput actionInput, final UserManger userManger) {
         this.name = actionInput.asMilestone().getName();
         this.blockingFor = actionInput.asMilestone().getBlockingFor();
         this.dueDate = actionInput.asMilestone().getDueDate();
@@ -79,7 +79,7 @@ public class Milestone {
         this.repartition = new ArrayList<>();
         if (this.assignedDevs != null) {
             for (String devName : this.assignedDevs) {
-                if(userManger.userExists(devName)
+                if (userManger.userExists(devName)
                         && Role.DEVELOPER.equals(userManger.getRole(devName))) {
                     this.repartition.add(new DeveloperRepartition(devName));
                 }

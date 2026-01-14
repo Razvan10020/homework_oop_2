@@ -1,6 +1,8 @@
 package fileio;
 
-import com.fasterxml.jackson.annotation.*;
+
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fileio.ActionComsIn.AddCommentInput;
 import fileio.ActionComsIn.AssignTicketInput;
@@ -26,19 +28,30 @@ public final class ActionInput {
     // 2. Colectăm toate restul câmpurilor de la root (name, dueDate, tickets etc.)
     private Map<String, Object> otherProps = new HashMap<>();
 
+    /**
+     * Metoda folosita pentru a adauga diferite campuri în mapa
+     * @param value Valoarea asociată cheii.
+     */
     @JsonAnySetter
-    public void addOther(String key, Object value) {
+    public void addOther(final String key, final Object value) {
         otherProps.put(key, value);
     }
 
     // --- LOGICA DE CONVERSIE ---
-
+    /**
+     * In functie de comanda schimba ce parametri trec si pot fi alesi
+     *
+     */
     public ParamsInput asParams() {
         // Dacă comanda e createMilestone, ignorăm ParamsInput
-        if ("createMilestone".equals(command)) return null;
+        if ("createMilestone".equals(command)) {
+            return null;
+        }
 
         // Dacă datele au venit în interiorul obiectului "params" { ... }
-        if (this.params != null) return this.params;
+        if (this.params != null) {
+            return this.params;
+        }
 
         // Dacă e reportTicket dar datele sunt la root (flat)
         if ("reportTicket".equals(command) && !otherProps.isEmpty()) {
@@ -48,9 +61,15 @@ public final class ActionInput {
         return null;
     }
 
+    /**
+     * In functie de comanda schimba ce parametri trec si pot fi alesi
+     *
+     */
     public MilestoneInput asMilestone() {
         // Dacă nu e comanda de milestone, nu încercăm conversia
-        if (!"createMilestone".equals(command)) return null;
+        if (!"createMilestone".equals(command)) {
+            return null;
+        }
 
         // Convertim Map-ul "otherProps" (unde s-au dus name, dueDate etc.) în MilestoneInput
         ObjectMapper mapper = new ObjectMapper();
@@ -61,6 +80,10 @@ public final class ActionInput {
         }
     }
 
+    /**
+     * In functie de comanda schimba ce parametri trec si pot fi alesi
+     * @return
+     */
     public AssignTicketInput asAssignTicket() {
         if (!"assignTicket".equals(command) && !"undoAssignTicket".equals(command)
             && !"changeStatus".equals(command) && !"undoChangeStatus".equals(command)) {
@@ -75,8 +98,14 @@ public final class ActionInput {
         }
     }
 
+    /**
+     * In functie de comanda schimba ce parametri trec si pot fi alesi
+     *
+     */
     public AddCommentInput asAddComment() {
-        if (!"addComment".equals(command)) return null;
+        if (!"addComment".equals(command)) {
+            return null;
+        }
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -87,6 +116,10 @@ public final class ActionInput {
         }
     }
 
+    /**
+     * In functie de comanda schimba ce parametri trec si pot fi alesi
+     *
+     */
     public AddCommentInput asUndoAddComment() {
         if (!"undoAddComment".equals(command)) {
             return null;

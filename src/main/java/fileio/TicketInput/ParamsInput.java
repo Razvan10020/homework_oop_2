@@ -26,7 +26,8 @@ import lombok.NoArgsConstructor;
         @JsonSubTypes.Type(value = FeatureRequestInput.class, name = "FEATURE_REQUEST"),
         @JsonSubTypes.Type(value = UiFeedbackInput.class, name = "UI_FEEDBACK")
 })
-public class ParamsInput { // Am scos "implements ActionParams" pentru a evita conflictele de pachete
+public class ParamsInput {
+    // Am scos "implements ActionParams" pentru a evita conflictele de pachete
     protected String type;
     protected String title;
     protected BusinessPriority businessPriority;

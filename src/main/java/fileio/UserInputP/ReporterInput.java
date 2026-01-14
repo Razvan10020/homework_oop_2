@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper=true)
-@JsonAutoDetect(fieldVisibility=JsonAutoDetect.Visibility.ANY)
+@EqualsAndHashCode(callSuper = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class ReporterInput extends UserInput {
 }

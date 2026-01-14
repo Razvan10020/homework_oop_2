@@ -2,9 +2,9 @@ package main.Users;
 
 import fileio.UserInput;
 
-public class Reporter extends User{
+public class Reporter extends User {
 
-    public Reporter(UserInput userInput) {
+    public Reporter(final UserInput userInput) {
         super(userInput.getUsername(),
                 userInput.getEmail(),
                 userInput.getRole());

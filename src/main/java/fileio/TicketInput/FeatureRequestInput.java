@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
-public final class FeatureRequestInput extends ParamsInput{
+public final class FeatureRequestInput extends ParamsInput {
     private BusinessValue businessValue;
     private CustomerDemand customerDemand;
 }

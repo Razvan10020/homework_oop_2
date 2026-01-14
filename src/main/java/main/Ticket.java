@@ -66,10 +66,6 @@ public class Ticket {
     @JsonIgnore
     private List<main.utils.Action> history = new ArrayList<>();
 
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
     public Ticket(final int id, final ActionInput actionInput) {
         this.type = actionInput.asParams().getType();
         this.title = actionInput.asParams().getTitle();
@@ -83,11 +79,12 @@ public class Ticket {
         this.status = Status.OPEN;
     }
 
-    public void assignTo(final String assignedTo) {
-        this.assignedTo = assignedTo;
-    }
-
-    public void addCommentToTicket(Comment comment) {
+    /**
+     *
+     * @param comment passes a comment type object to add to
+     *                the list of all comment sassociated with the thicket
+     */
+    public void addCommentToTicket(final Comment comment) {
         this.comments.add(comment);
     }
 

@@ -10,8 +10,8 @@ import java.util.List;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper=true)
-@JsonAutoDetect(fieldVisibility=JsonAutoDetect.Visibility.ANY)
+@EqualsAndHashCode(callSuper = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 public class ManagerInput extends UserInput {
     private String hireDate;
     private List<String> subordinates;

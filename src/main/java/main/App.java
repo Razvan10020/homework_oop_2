@@ -17,7 +17,7 @@ import java.util.List;
  * main.App represents the main application logic that processes input commands,
  * generates outputs, and writes them to a file
  */
-public class App {
+public final class App {
     private App() {
     }
 
@@ -25,11 +25,6 @@ public class App {
 
     private static final ObjectWriter WRITER =
             new ObjectMapper().writer().withDefaultPrettyPrinter();
-
-    public static void main(String[] args) {
-        run("input/in_04_test_assign.json", "out/out_04_test_assign.json");
-    }
-
     /**
      * Runs the application: reads commands from an input file,
      * processes them, generates results, and writes them to an output file
@@ -62,7 +57,8 @@ public class App {
             userManger.loadUsers(usersInput);
 
         } catch (IOException e) {
-            System.err.println("Eroare la încărcarea bazei de date de utilizatori: " + e.getMessage());
+            System.err.println("Eroare la încărcarea bazei de date de utilizatori: "
+                    + e.getMessage());
             return;
         }
 
@@ -85,119 +81,30 @@ public class App {
         boolean investorsLost = false;
 
         for (ActionInput actionInput : actionInputs) {
-            if (investorsLost) break;
+            if (investorsLost) {
+                break;
+            }
             try {
                 ObjectNode response = mapper.createObjectNode();
                 response.put("command", actionInput.getCommand());
                 response.put("username", actionInput.getUsername());
                 response.put("timestamp", actionInput.getTimestamp());
 
-                int addRepoToOut = 1;
+                boolean shouldAdd = processCommand(actionInput, userManger,
+                        ticketManager, response, mapper);
 
-                switch (actionInput.getCommand()) {
-                    case "viewTickets" -> {
-                        ticketManager.ViewTicket(actionInput, userManger,response, mapper);
-                    }
-                    case "reportTicket" -> {
-                        String error = ticketManager.reportTicket(actionInput, userManger, response);
-                        if (error != null) {
-                            response.put("error", error);
-                        }
-                        else  {
-                            addRepoToOut = 0;
-                        }
-                    }
-                    case "lostInvestors" -> {
-                        Role role = userManger.getRole(actionInput.getUsername());
-                        if (!Role.MANAGER.equals(role)) {
-                            response.put("error", "Only managers can execute this command.");
-                        }
-                        else {
-                            investorsLost = true;
-                            addRepoToOut = 0;
-                        }
-                    }
-                    case "createMilestone" -> {
-                        String error = ticketManager.createMilestone(actionInput, userManger, response);
-                        if (error != null) {
-                            response.put("error", error);
-                        }
-                        else  {
-                            addRepoToOut = 0;
-                        }
-                    }
-                    case "viewMilestones" -> {
-                        ticketManager.ViewMilestones(actionInput, userManger,response, mapper);
-                    }
-                    case "assignTicket" -> {
-                        String error = ticketManager.assignTicket(actionInput, userManger, response);
-                        if (error != null) {
-                            response.put("error", error);
-                        }
-                        else  {
-                            addRepoToOut = 0;
-                        }
-                    }
-                    case "undoAssignTicket" -> {
-                        String error = ticketManager.undoAssignTicket(actionInput, userManger, response);
-                        if (error != null) {
-                            response.put("error", error);
-                        }
-                        else  {
-                            addRepoToOut = 0;
-                        }
-                    }
-                    case "viewAssignedTickets" -> {
-                        ticketManager.ViewAssignedTickets(actionInput, userManger,response, mapper);
-                    }
-                    case "addComment" -> {
-                        String error = ticketManager.addComment(actionInput, userManger, response);
-                        if (error != null) {
-                            response.put("error", error);
-                        }
-                        else  {
-                            addRepoToOut = 0;
-                        }
-                    }
-                    case "undoAddComment" -> {
-                        String error = ticketManager.undoAddComment(actionInput, userManger, response);
-                        if (error != null) {
-                            response.put("error", error);
-                        }
-                        else  {
-                            addRepoToOut = 0;
-                        }
-                    }
-                    case "changeStatus" -> {
-                        String error = ticketManager.changeStatus(actionInput, userManger, response);
-                        if (error != null) {
-                            response.put("error", error);
-                        }
-                        else {
-                            addRepoToOut = 0;
-                        }
-                    }
-                    case "undoChangeStatus" -> {
-                        String error = ticketManager.undoChangeStatus(actionInput, userManger, response);
-                        if (error != null) {
-                            response.put("error", error);
-                        }
-                        else {
-                            addRepoToOut = 0;
-                        }
-                    }
-                    case "viewTicketHistory" -> {
-                        ticketManager.ViewTicketHistory(actionInput, userManger, response, mapper);
-                    }
-                    default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
+                if ("lostInvestors".equals(actionInput.getCommand())
+                        && !response.has("error")) {
+                    investorsLost = true;
                 }
 
-                if (addRepoToOut > 0) {
+                if (shouldAdd) {
                     outputs.add(response);
                 }
 
             } catch (Exception e) {
-                System.err.println("Eroare la procesarea comenzii " + actionInput.getCommand() + ": " + e.getMessage());
+                System.err.println("Eroare la procesarea comenzii " + actionInput.getCommand()
+                        + ": " + e.getMessage());
                 e.printStackTrace();
             }
         }
@@ -212,5 +119,111 @@ public class App {
         } catch (IOException e) {
             System.out.println("error writing to output file: " + e.getMessage());
         }
+    }
+
+    /**
+     *
+     * @param actionInput passes the input aff all the paramaters
+     * @param userManger passes the user information after parsing
+     * @param ticketManager the factory behind all logic
+     * @param response the response node for all outputs
+     * @param mapper i think if i share teh mapper i have less overhead
+     * @return
+     */
+    private static boolean processCommand(final ActionInput actionInput,
+                                          final UserManger userManger,
+                                          final TicketManager ticketManager,
+                                          final ObjectNode response,
+                                          final ObjectMapper mapper) {
+        int addRepoToOut = 1;
+
+        switch (actionInput.getCommand()) {
+            case "viewTickets" -> {
+                ticketManager.ViewTicket(actionInput, userManger, response, mapper);
+            }
+            case "reportTicket" -> {
+                String error = ticketManager.reportTicket(actionInput, userManger, response);
+                if (error != null) {
+                    response.put("error", error);
+                } else {
+                    addRepoToOut = 0;
+                }
+            }
+            case "lostInvestors" -> {
+                Role role = userManger.getRole(actionInput.getUsername());
+                if (!Role.MANAGER.equals(role)) {
+                    response.put("error", "Only managers can execute this command.");
+                } else {
+                    addRepoToOut = 0;
+                }
+            }
+            case "createMilestone" -> {
+                String error = ticketManager.createMilestone(actionInput, userManger, response);
+                if (error != null) {
+                    response.put("error", error);
+                } else {
+                    addRepoToOut = 0;
+                }
+            }
+            case "viewMilestones" -> {
+                ticketManager.ViewMilestones(actionInput, userManger, response, mapper);
+            }
+            case "assignTicket" -> {
+                String error = ticketManager.assignTicket(actionInput, userManger, response);
+                if (error != null) {
+                    response.put("error", error);
+                } else {
+                    addRepoToOut = 0;
+                }
+            }
+            case "undoAssignTicket" -> {
+                String error = ticketManager.undoAssignTicket(actionInput, userManger, response);
+                if (error != null) {
+                    response.put("error", error);
+                } else {
+                    addRepoToOut = 0;
+                }
+            }
+            case "viewAssignedTickets" -> {
+                ticketManager.ViewAssignedTickets(actionInput, userManger, response, mapper);
+            }
+            case "addComment" -> {
+                String error = ticketManager.addComment(actionInput, userManger, response);
+                if (error != null) {
+                    response.put("error", error);
+                } else {
+                    addRepoToOut = 0;
+                }
+            }
+            case "undoAddComment" -> {
+                String error = ticketManager.undoAddComment(actionInput, userManger, response);
+                if (error != null) {
+                    response.put("error", error);
+                } else {
+                    addRepoToOut = 0;
+                }
+            }
+            case "changeStatus" -> {
+                String error = ticketManager.changeStatus(actionInput, userManger, response);
+                if (error != null) {
+                    response.put("error", error);
+                } else {
+                    addRepoToOut = 0;
+                }
+            }
+            case "undoChangeStatus" -> {
+                String error = ticketManager.undoChangeStatus(actionInput, userManger, response);
+                if (error != null) {
+                    response.put("error", error);
+                } else {
+                    addRepoToOut = 0;
+                }
+            }
+            case "viewTicketHistory" -> {
+                ticketManager.ViewTicketHistory(actionInput, userManger, response, mapper);
+            }
+            default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
+        }
+        return addRepoToOut > 0;
     }
 }

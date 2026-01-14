@@ -10,11 +10,11 @@ import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class Manager extends User{
+public class Manager extends User {
         private String hireDate;
         private List<String> subordinates;
 
-        public Manager(UserInput userInput) {
+        public Manager(final UserInput userInput) {
             super(userInput.getUsername(),
                     userInput.getEmail(),
                     userInput.getRole());

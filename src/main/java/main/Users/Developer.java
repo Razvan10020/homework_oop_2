@@ -14,7 +14,7 @@ public class Developer extends User {
     private ExpertiseArea expertiseArea;
     private Seniority seniority;
 
-    public Developer(UserInput userInput) {
+    public Developer(final UserInput userInput) {
         super(userInput.getUsername(),
                 userInput.getEmail(),
                 userInput.getRole());
