@@ -222,6 +222,9 @@ public final class App {
             case "viewTicketHistory" -> {
                 ticketManager.ViewTicketHistory(actionInput, userManger, response, mapper);
             }
+            case "search" -> {
+                ticketManager.search(actionInput,userManger, response, mapper);
+            }
             default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
         }
         return addRepoToOut > 0;

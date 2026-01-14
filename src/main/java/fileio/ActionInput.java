@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fileio.ActionComsIn.AddCommentInput;
 import fileio.ActionComsIn.AssignTicketInput;
+import fileio.ActionComsIn.FilterInput;
 import fileio.ActionComsIn.MilestoneInput;
 import fileio.TicketInput.ParamsInput;
 import lombok.Data;
@@ -27,6 +28,8 @@ public final class ActionInput {
 
     // 2. Colectăm toate restul câmpurilor de la root (name, dueDate, tickets etc.)
     private Map<String, Object> otherProps = new HashMap<>();
+
+    private FilterInput filters;
 
     /**
      * Metoda folosita pentru a adauga diferite campuri în mapa
@@ -130,6 +133,15 @@ public final class ActionInput {
             return mapper.convertValue(otherProps, AddCommentInput.class);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    public FilterInput asFilter() {
+        if (!"search".equals(command)) {
+            return null;
+        }
+        if (filters != null) {
+            return this.filters;
         }
     }
 }
