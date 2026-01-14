@@ -8,7 +8,7 @@ import enums.ExpertiseArea;
 import enums.Status;
 import fileio.ActionInput;
 import lombok.Data;
-import main.Tickets.Comment;
+import main.Commands.Comment;
 import main.utils.Views;
 
 import java.util.ArrayList;

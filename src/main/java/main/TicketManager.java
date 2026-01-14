@@ -10,11 +10,9 @@ import enums.Seniority;
 import enums.Status;
 import fileio.ActionInput;
 import fileio.ActionComsIn.AddCommentInput;
-import fileio.ActionComsIn.AssignTicketInput;
-import fileio.ActionComsIn.MilestoneInput;
-import main.Tickets.Comment;
-import main.Tickets.Milestone;
-import main.Tickets.TestingPhase;
+import main.Commands.Comment;
+import main.Commands.Milestone;
+import main.Commands.TestingPhase;
 import main.Users.Developer;
 import main.Users.DeveloperRepartition;
 

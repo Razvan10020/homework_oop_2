@@ -1,9 +1,7 @@
-package main.Tickets;
+package main.Commands;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import fileio.ActionInput;
 import lombok.Data;
-import main.UserManger;
 
 @Data
 @JsonPropertyOrder({

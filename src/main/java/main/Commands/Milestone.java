@@ -1,4 +1,4 @@
-package main.Tickets;
+package main.Commands;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,10 +7,7 @@ import enums.Role;
 import enums.Status;
 import fileio.ActionInput;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import main.UserManger;
-import main.Users.Developer;
 import main.Users.DeveloperRepartition;
 
 import java.time.LocalDate;

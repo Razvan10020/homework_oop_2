@@ -1,4 +1,4 @@
-package main.Tickets;
+package main.Commands;
 
 import lombok.Data;
 
