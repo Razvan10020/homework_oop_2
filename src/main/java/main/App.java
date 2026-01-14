@@ -82,8 +82,10 @@ public class App {
 
         // TODO 2: process commands.
         TicketManager ticketManager = new TicketManager();
+        boolean investorsLost = false;
 
         for (ActionInput actionInput : actionInputs) {
+            if (investorsLost) break;
             try {
                 ObjectNode response = mapper.createObjectNode();
                 response.put("command", actionInput.getCommand());
@@ -111,6 +113,7 @@ public class App {
                             response.put("error", "Only managers can execute this command.");
                         }
                         else {
+                            investorsLost = true;
                             addRepoToOut = 0;
                         }
                     }
@@ -164,6 +167,27 @@ public class App {
                         else  {
                             addRepoToOut = 0;
                         }
+                    }
+                    case "changeStatus" -> {
+                        String error = ticketManager.changeStatus(actionInput, userManger, response);
+                        if (error != null) {
+                            response.put("error", error);
+                        }
+                        else {
+                            addRepoToOut = 0;
+                        }
+                    }
+                    case "undoChangeStatus" -> {
+                        String error = ticketManager.undoChangeStatus(actionInput, userManger, response);
+                        if (error != null) {
+                            response.put("error", error);
+                        }
+                        else {
+                            addRepoToOut = 0;
+                        }
+                    }
+                    case "viewTicketHistory" -> {
+                        ticketManager.ViewTicketHistory(actionInput, userManger, response, mapper);
                     }
                     default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
                 }
