@@ -55,12 +55,16 @@ public class Ticket {
     private String assignedAt = "";
     @JsonView(Views.GeneralTicketView.class)
     private String solvedAt = "";
+    @JsonIgnore
+    private String closedAt = "";
     @JsonView(Views.GeneralTicketView.class)
     private String assignedTo = "";
     @JsonIgnore
     private String assignedMilestone = "";
     @JsonView(Views.AssignedTicketView.class)
     private List<Comment> comments = new ArrayList<>();
+    @JsonIgnore
+    private List<main.utils.Action> history = new ArrayList<>();
 
     public void setStatus(Status status) {
         this.status = status;
