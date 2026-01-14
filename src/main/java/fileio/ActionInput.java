@@ -62,7 +62,10 @@ public final class ActionInput {
     }
 
     public AssignTicketInput asAssignTicket() {
-        if (!"assignTicket".equals(command) && !"undoAssignTicket".equals(command)) return null;
+        if (!"assignTicket".equals(command) && !"undoAssignTicket".equals(command)
+            && !"changeStatus".equals(command) && !"undoChangeStatus".equals(command)) {
+            return null;
+        }
 
         ObjectMapper mapper = new ObjectMapper();
         try {
