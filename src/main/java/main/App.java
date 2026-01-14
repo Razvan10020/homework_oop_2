@@ -147,6 +147,24 @@ public class App {
                     case "viewAssignedTickets" -> {
                         ticketManager.ViewAssignedTickets(actionInput, userManger,response, mapper);
                     }
+                    case "addComment" -> {
+                        String error = ticketManager.addComment(actionInput, userManger, response);
+                        if (error != null) {
+                            response.put("error", error);
+                        }
+                        else  {
+                            addRepoToOut = 0;
+                        }
+                    }
+                    case "undoAddComment" -> {
+                        String error = ticketManager.undoAddComment(actionInput, userManger, response);
+                        if (error != null) {
+                            response.put("error", error);
+                        }
+                        else  {
+                            addRepoToOut = 0;
+                        }
+                    }
                     default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
                 }
 

@@ -9,6 +9,10 @@ import enums.Role;
 import enums.Seniority;
 import enums.Status;
 import fileio.ActionInput;
+import fileio.ActionComsIn.AddCommentInput;
+import fileio.ActionComsIn.AssignTicketInput;
+import fileio.ActionComsIn.MilestoneInput;
+import main.Tickets.Comment;
 import main.Tickets.Milestone;
 import main.Tickets.TestingPhase;
 import main.Users.Developer;
@@ -432,6 +436,9 @@ public class TicketManager {
         String username = actionInput.getUsername();
         ObjectMapper objectMapper = new ObjectMapper();
 
+        // Update tickets before viewing
+        updateTickets(tickets, LocalDate.parse(actionInput.getTimestamp()));
+
         // Obținem lista de ID-uri de la developer
         DeveloperRepartition devRep = developersMap.get(username);
         if (devRep == null) {
@@ -570,5 +577,74 @@ public class TicketManager {
             }
         }
         return false;
+    }
+
+    public String addComment(ActionInput actionInput, UserManger userManger, ObjectNode response) {
+        Role role = userManger.getRole(actionInput.getUsername());
+        AddCommentInput commentInput = actionInput.asAddComment();
+        if (commentInput == null) return null;
+
+        Ticket ticket = ticketIdMap.get(commentInput.getTicketID());
+
+        if (ticket == null) {
+            return null;
+        }
+
+        if (ticket.getReportedBy().isEmpty()) {
+            return "Comments are not allowed on anonymous tickets.";
+        }
+
+        if (role == Role.REPORTER && ticket.getStatus() == Status.CLOSED) {
+            return "Reporters cannot comment on CLOSED tickets.";
+        }
+
+        if (commentInput.getComment().length() < 10) {
+            return "Comment must be at least 10 characters long.";
+        }
+
+        if (role == Role.DEVELOPER) {
+            if (!actionInput.getUsername().equals(ticket.getAssignedTo())) {
+                return "Ticket " + ticket.getId() + " is not assigned to the developer " + actionInput.getUsername() + ".";
+            }
+        }
+
+        if (role == Role.REPORTER) {
+            if (!actionInput.getUsername().equals(ticket.getReportedBy())) {
+                return "Reporter " + actionInput.getUsername() + " cannot comment on ticket " + ticket.getId() + ".";
+            }
+        }
+
+        Comment comment = new Comment(
+                actionInput.getUsername(),
+                commentInput.getComment(),
+                actionInput.getTimestamp()
+        );
+
+        ticket.addCommentToTicket(comment);
+        return null;
+    }
+
+    public String undoAddComment(ActionInput actionInput, UserManger userManger, ObjectNode response) {
+        AddCommentInput undoInput = actionInput.asUndoAddComment();
+        if (undoInput == null) return null;
+
+        Ticket ticket = ticketIdMap.get(undoInput.getTicketID());
+        if (ticket == null) {
+            return null;
+        }
+
+        if (ticket.getReportedBy().isEmpty()) {
+            return "Comments are not allowed on anonymous tickets.";
+        }
+
+        List<Comment> comments = ticket.getComments();
+        for (int i = comments.size() - 1; i >= 0; i--) {
+            if (comments.get(i).getAuthor().equals(actionInput.getUsername())) {
+                comments.remove(i);
+                return null;
+            }
+        }
+
+        return null;
     }
 }

@@ -8,6 +8,7 @@ import enums.ExpertiseArea;
 import enums.Status;
 import fileio.ActionInput;
 import lombok.Data;
+import main.Tickets.Comment;
 import main.utils.Views;
 
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ public class Ticket {
     @JsonIgnore
     private String assignedMilestone = "";
     @JsonView(Views.AssignedTicketView.class)
-    private List<String> comments = new ArrayList<>();
+    private List<Comment> comments = new ArrayList<>();
 
     public void setStatus(Status status) {
         this.status = status;
@@ -80,6 +81,10 @@ public class Ticket {
 
     public void assignTo(final String assignedTo) {
         this.assignedTo = assignedTo;
+    }
+
+    public void addCommentToTicket(Comment comment) {
+        this.comments.add(comment);
     }
 
 }
