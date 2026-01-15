@@ -8,10 +8,12 @@ import fileio.ActionComsIn.FilterInput;
 import fileio.ActionInput;
 import main.Commands.Milestone;
 import main.Users.Developer;
+import main.Users.Manager;
 import main.Users.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,23 +27,33 @@ public class Search {
                        final ObjectNode response, final ObjectMapper mapper) {
 
         String username = actionInput.getUsername();
-        Role role = userManger.getRole(username);
+        User currentUser = userManger.getUser(username);
+        Role role = currentUser.getRole();
         FilterInput filter = actionInput.asFilter();
 
-        if (filter == null) {
+        // Regula 3: Dacă nu este specificat niciun filtru → viewTickets
+        if (filter == null ) {
             ticketManager.ViewTicket(actionInput, userManger, response, mapper);
             return;
         }
 
-        List<Ticket> pool = new ArrayList<>();
         if (Role.DEVELOPER.equals(role)) {
-            pool = getDeveloperInitialTickets(username);
-        }
-        else if (Role.MANAGER.equals(role)) {
-            pool = getManagerInitialTickets(username);
+            searchTicketsForDevs(actionInput, userManger, response);
         }
 
-        // Pipeline-ul de filtrare - CURAT ȘI COERENT
+        // Managerul poate căuta și DEVELOPERI
+        if (Role.MANAGER.equals(role) && filter.isDeveloperSearch()) {
+            searchDevelopers(actionInput, userManger, response);
+        } else {
+            searchTicketsForManager(actionInput, userManger, response, role);
+        }
+    }
+
+    private void searchTicketsForDevs(final ActionInput actionInput, final UserManger userManger, final ObjectNode response) {
+        String username = actionInput.getUsername();
+        List<Ticket> pool = getDeveloperInitialTickets(username);
+        FilterInput filter = actionInput.asFilter();
+
         List<Ticket> results = pool.stream()
                 .filter(t -> filter.getType() == null || filter.getType().equals(t.getType()))
                 .filter(t -> filter.getBusinessPriority() == null || filter.getBusinessPriority().equals(t.getBusinessPriority()))
@@ -53,6 +65,7 @@ public class Search {
                 .collect(Collectors.toList());
 
         response.putPOJO("results", results);
+
     }
 
     private List<Ticket> getDeveloperInitialTickets(String username) {
@@ -90,8 +103,81 @@ public class Search {
                 && !ticketManager.isMilestoneBlocked(ticket.getAssignedMilestone());
     }
 
+    private void searchTicketsForManager(ActionInput actionInput, final UserManger userManger,
+                                         final ObjectNode response) {
+        FilterInput filter = actionInput.asFilter();
+        // Managerul pleacă de la TOATE tichetele
+        List<Ticket> pool = new ArrayList<>(ticketIdMap.values());
+
+        List<Ticket> results = pool.stream()
+                .filter(t -> filter.getType() == null || filter.getType().equals(t.getType()))
+                .filter(t -> filter.getBusinessPriority() == null || filter.getBusinessPriority().equals(t.getBusinessPriority()))
+                .filter(t -> filter.getKeywords() == null || matchesKeywords(t, filter.getKeywords())) // Filtru extra de keywords
+                .sorted(Comparator.comparing(Ticket::getCreatedAt).thenComparing(Ticket::getId))
+                .collect(Collectors.toList());
+
+        response.putPOJO("results", results);
+    }
+
     private List<Ticket> getManagerInitialTickets(String username) {
 
     }
 
+    private void searchDevelopers(ActionInput actionInput, UserManger userManger, ObjectNode response) {
+        FilterInput filter = actionInput.asFilter();
+        // Presupunem că ai o metodă în UserManager care îți dă lista de dev pentru un manager
+        List<String> poolFirst = ((Manager) userManger.getUser(actionInput.getUsername())).getSubordinates();
+
+        List<Developer> pool = new ArrayList<>();
+        for (String username : poolFirst) {
+            pool.add((Developer) userManger.getUser(username));
+        }
+
+        List<Developer> results = pool.stream()
+                .filter(d -> filter.getExpertiseArea() == null || d.getExpertiseArea().equals(filter.getExpertiseArea()))
+                .filter(d -> filter.getSeniority() == null || d.getSeniority().equals(filter.getSeniority()))
+                .filter(d -> d.getPerformanceScore() >= filter.getPerformanceScoreAbove())
+                .sorted(Comparator.comparing(Developer::getUsername))
+                .collect(Collectors.toList());
+
+        response.putPOJO("results", results);
+    }
+
+    private boolean matchesKeywords(Ticket t, List<String> keywords) {
+        if (keywords == null || keywords.isEmpty()) {
+            return true;
+        }
+        // Concatenăm titlul și descrierea și facem totul lowercase
+        String searchBase = (t.getTitle() + " " + t.getDescription()).toLowerCase();
+
+        // Verificăm dacă măcar unul dintre cuvintele cheie se regăsește în bază
+        return keywords.stream()
+                .anyMatch(k -> searchBase.contains(k.toLowerCase()));
+    }
+
+    /**
+     * Comparator pentru tichete: întai după data creării (vechi -> noi), apoi după ID.
+     */
+    private Comparator<Ticket> ticketComparator() {
+        return Comparator.comparing(Ticket::getCreatedAt)
+                .thenComparing(Ticket::getId);
+    }
+
+    /**
+     * Comparator pentru developeri: alfabetic după username.
+     */
+    private Comparator<Developer> developerComparator() {
+        return Comparator.comparing(Developer::getUsername);
+    }
+
+    private List<String> getMatchingWords(Ticket t, List<String> keywords) {
+        if (keywords == null) return new ArrayList<>();
+        String searchBase = (t.getTitle() + " " + t.getDescription()).toLowerCase();
+
+        return keywords.stream()
+                .filter(k -> searchBase.contains(k.toLowerCase()))
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
+    }
 }
