@@ -10,18 +10,24 @@ import main.Commands.Milestone;
 import main.Users.Developer;
 import main.Users.Manager;
 import main.Users.User;
+import main.utils.TicketSearchResult;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class Search {
-    TicketManager ticketManager = new TicketManager();
-    private List<Milestone> milestones = ticketManager.getMilestones();
-    Map<Integer, Ticket> ticketIdMap = ticketManager.getTicketIdMap();
+public final class Search {
+    private final TicketManager ticketManager;
+    private final List<Milestone> milestones;
+    private final Map<Integer, Ticket> ticketIdMap;
+
+    public Search(final TicketManager ticketManager) {
+        this.ticketManager = ticketManager;
+        this.milestones = ticketManager.getMilestones();
+        this.ticketIdMap = ticketManager.getTicketIdMap();
+    }
 
     public void search(final ActionInput actionInput, final UserManger userManger,
                        final ObjectNode response, final ObjectMapper mapper) {
@@ -31,66 +37,78 @@ public class Search {
         Role role = currentUser.getRole();
         FilterInput filter = actionInput.asFilter();
 
-        // Regula 3: Dacă nu este specificat niciun filtru → viewTickets
-        if (filter == null ) {
+        if (filter == null) {
             ticketManager.ViewTicket(actionInput, userManger, response, mapper);
             return;
         }
 
-        if (Role.DEVELOPER.equals(role)) {
-            searchTicketsForDevs(actionInput, userManger, response);
+        if (filter.getSearchType() != null) {
+            response.put("searchType", filter.getSearchType().toString());
         }
 
-        // Managerul poate căuta și DEVELOPERI
-        if (Role.MANAGER.equals(role) && filter.isDeveloperSearch()) {
-            searchDevelopers(actionInput, userManger, response);
-        } else {
-            searchTicketsForManager(actionInput, userManger, response, role);
+        if (role.equals(Role.DEVELOPER)) {
+            searchTicketsForDevs(actionInput, userManger, response);
+        } else if (role.equals(Role.MANAGER)) {
+            if (filter.isDeveloperSearch()) {
+                searchDevelopers(actionInput, userManger, response);
+            } else {
+                searchTicketsForManager(actionInput, userManger, response, mapper);
+            }
         }
     }
 
-    private void searchTicketsForDevs(final ActionInput actionInput, final UserManger userManger, final ObjectNode response) {
+    private void searchTicketsForDevs(final ActionInput actionInput,
+                                      final UserManger userManger, final ObjectNode response) {
         String username = actionInput.getUsername();
         List<Ticket> pool = getDeveloperInitialTickets(username);
         FilterInput filter = actionInput.asFilter();
 
-        List<Ticket> results = pool.stream()
-                .filter(t -> filter.getType() == null || filter.getType().equals(t.getType()))
-                .filter(t -> filter.getBusinessPriority() == null || filter.getBusinessPriority().equals(t.getBusinessPriority()))
-                .filter(t -> filter.getCreatedAt() == null || filter.getCreatedAt().equals(t.getCreatedAt()))
-                .filter(t -> filter.getCreatedBefore() == null || isBefore(t.getCreatedAt(), filter.getCreatedBefore()))
-                .filter(t -> filter.getCreatedAfter() == null || isAfter(t.getCreatedAt(), filter.getCreatedAfter()))
+        List<TicketSearchResult> results = pool.stream()
+                .filter(t -> filter.getType() == null
+                        || filter.getType().equals(t.getType()))
+                .filter(t -> filter.getBusinessPriority() == null
+                        || filter.getBusinessPriority().equals(t.getBusinessPriority()))
+                .filter(t -> filter.getCreatedAt() == null
+                        || filter.getCreatedAt().equals(t.getCreatedAt()))
+                .filter(t -> filter.getCreatedBefore() == null
+                        || isBefore(t.getCreatedAt(), filter.getCreatedBefore()))
+                .filter(t -> filter.getCreatedAfter() == null
+                        || isAfter(t.getCreatedAt(), filter.getCreatedAfter()))
                 .filter(t -> filter.getAvailableForAssignment() == null
-                        || filter.getAvailableForAssignment().equals(isAvailable(t, username, userManger)))
+                        || filter.getAvailableForAssignment()
+                        .equals(isAvailable(t, username, userManger)))
+                .sorted(ticketComparator())
+                .map(t -> new TicketSearchResult(t, null))
                 .collect(Collectors.toList());
 
         response.putPOJO("results", results);
 
     }
 
-    private List<Ticket> getDeveloperInitialTickets(String username) {
+    private List<Ticket> getDeveloperInitialTickets(final String username) {
         return milestones.stream()
-                .filter(m -> m.getAssignedDevs() != null &&
-                        java.util.Arrays.asList(m.getAssignedDevs()).contains(username))
+                .filter(m -> m.getAssignedDevs() != null
+                        && java.util.Arrays.asList(m.getAssignedDevs()).contains(username))
                 .flatMapToInt(m -> java.util.Arrays.stream(m.getTickets()))
                 .mapToObj(ticketIdMap::get)
                 .filter(t -> t != null && t.getStatus() == Status.OPEN)
                 .collect(Collectors.toList());
     }
 
-    private boolean isBefore(String ticketDate, String filterDate) {
-        return LocalDateTime.parse(ticketDate).isBefore(LocalDateTime.parse(filterDate));
+    private boolean isBefore(final String ticketDate, final String filterDate) {
+        return java.time.LocalDate.parse(ticketDate).isBefore(java.time.LocalDate.parse(filterDate));
     }
 
-    private boolean isAfter(String ticketDate, String filterDate) {
-        return LocalDateTime.parse(ticketDate).isAfter(LocalDateTime.parse(filterDate));
+    private boolean isAfter(final String ticketDate, final String filterDate) {
+        return java.time.LocalDate.parse(ticketDate).isAfter(java.time.LocalDate.parse(filterDate));
     }
 
     /**
      * Verifica disponibilitatea pentru asignare.
      * Redenumit din AvaidableForAssignement pentru Checkstyle si typos.
      */
-    private boolean isAvailable(Ticket ticket, String username, UserManger userManger) {
+    private boolean isAvailable(final Ticket ticket,
+                                final String username, final UserManger userManger) {
         User user = userManger.getUser(username);
         if (!(user instanceof Developer)) {
             return false;
@@ -103,30 +121,49 @@ public class Search {
                 && !ticketManager.isMilestoneBlocked(ticket.getAssignedMilestone());
     }
 
-    private void searchTicketsForManager(ActionInput actionInput, final UserManger userManger,
-                                         final ObjectNode response) {
+    private void searchTicketsForManager(final ActionInput actionInput,
+                                         final UserManger userManger,
+                                         final ObjectNode response, final ObjectMapper mapper) {
         FilterInput filter = actionInput.asFilter();
+        String username = actionInput.getUsername();
         // Managerul pleacă de la TOATE tichetele
         List<Ticket> pool = new ArrayList<>(ticketIdMap.values());
 
-        List<Ticket> results = pool.stream()
-                .filter(t -> filter.getType() == null || filter.getType().equals(t.getType()))
-                .filter(t -> filter.getBusinessPriority() == null || filter.getBusinessPriority().equals(t.getBusinessPriority()))
-                .filter(t -> filter.getKeywords() == null || matchesKeywords(t, filter.getKeywords())) // Filtru extra de keywords
-                .sorted(Comparator.comparing(Ticket::getCreatedAt).thenComparing(Ticket::getId))
+        List<TicketSearchResult> results = pool.stream()
+                .filter(t -> filter.getType() == null
+                        || filter.getType().equals(t.getType()))
+                .filter(t -> filter.getBusinessPriority() == null
+                        || filter.getBusinessPriority().equals(t.getBusinessPriority()))
+                .filter(t -> filter.getKeywords() == null
+                        || matchesKeywords(t, filter.getKeywords()))
+                .filter(t -> filter.getCreatedAt() == null
+                        || filter.getCreatedAt().equals(t.getCreatedAt()))
+                .filter(t -> filter.getCreatedBefore() == null
+                        || isBefore(t.getCreatedAt(), filter.getCreatedBefore()))
+                .filter(t -> filter.getCreatedAfter() == null
+                        || isAfter(t.getCreatedAt(), filter.getCreatedAfter()))
+                .filter(t -> filter.getAvailableForAssignment() == null
+                        || filter.getAvailableForAssignment()
+                        .equals(isAvailable(t, username, userManger)))
+                .sorted(ticketComparator())
+                .map(t -> {
+                    List<String> matchingWords = null;
+                    if (filter.getKeywords() != null) {
+                        matchingWords = getMatchingWords(t, filter.getKeywords());
+                    }
+                    return new TicketSearchResult(t, matchingWords);
+                })
                 .collect(Collectors.toList());
 
         response.putPOJO("results", results);
     }
 
-    private List<Ticket> getManagerInitialTickets(String username) {
-
-    }
-
-    private void searchDevelopers(ActionInput actionInput, UserManger userManger, ObjectNode response) {
+    private void searchDevelopers(final ActionInput actionInput,
+                                  final UserManger userManger, final ObjectNode response) {
         FilterInput filter = actionInput.asFilter();
         // Presupunem că ai o metodă în UserManager care îți dă lista de dev pentru un manager
-        List<String> poolFirst = ((Manager) userManger.getUser(actionInput.getUsername())).getSubordinates();
+        List<String> poolFirst =
+                ((Manager) userManger.getUser(actionInput.getUsername())).getSubordinates();
 
         List<Developer> pool = new ArrayList<>();
         for (String username : poolFirst) {
@@ -134,21 +171,27 @@ public class Search {
         }
 
         List<Developer> results = pool.stream()
-                .filter(d -> filter.getExpertiseArea() == null || d.getExpertiseArea().equals(filter.getExpertiseArea()))
-                .filter(d -> filter.getSeniority() == null || d.getSeniority().equals(filter.getSeniority()))
-                .filter(d -> d.getPerformanceScore() >= filter.getPerformanceScoreAbove())
-                .sorted(Comparator.comparing(Developer::getUsername))
+                .filter(d -> filter.getExpertiseArea() == null
+                        || d.getExpertiseArea().equals(filter.getExpertiseArea()))
+                .filter(d -> filter.getSeniority() == null
+                        || d.getSeniority().equals(filter.getSeniority()))
+                .filter(d -> filter.getPerformanceScoreAbove() == null
+                        || d.getPerformanceScore() >= filter.getPerformanceScoreAbove())
+                .filter(d -> filter.getPerformanceScoreBelow() == null
+                        || d.getPerformanceScore() < filter.getPerformanceScoreBelow())
+                .sorted(developerComparator())
                 .collect(Collectors.toList());
 
         response.putPOJO("results", results);
     }
 
-    private boolean matchesKeywords(Ticket t, List<String> keywords) {
+    private boolean matchesKeywords(final Ticket t, final List<String> keywords) {
         if (keywords == null || keywords.isEmpty()) {
             return true;
         }
         // Concatenăm titlul și descrierea și facem totul lowercase
-        String searchBase = (t.getTitle() + " " + t.getDescription()).toLowerCase();
+        String description = t.getDescription() == null ? "" : t.getDescription();
+        String searchBase = (t.getTitle() + " " + description).toLowerCase();
 
         // Verificăm dacă măcar unul dintre cuvintele cheie se regăsește în bază
         return keywords.stream()
@@ -170,8 +213,10 @@ public class Search {
         return Comparator.comparing(Developer::getUsername);
     }
 
-    private List<String> getMatchingWords(Ticket t, List<String> keywords) {
-        if (keywords == null) return new ArrayList<>();
+    private List<String> getMatchingWords(final Ticket t, final List<String> keywords) {
+        if (keywords == null) {
+            return new ArrayList<>();
+        }
         String searchBase = (t.getTitle() + " " + t.getDescription()).toLowerCase();
 
         return keywords.stream()

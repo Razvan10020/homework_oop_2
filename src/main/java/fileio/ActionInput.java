@@ -143,5 +143,7 @@ public final class ActionInput {
         if (filters != null) {
             return this.filters;
         }
+
+        return null;
     }
 }

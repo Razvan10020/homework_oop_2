@@ -4,14 +4,15 @@ import fileio.UserInputP.ManagerInput;
 import fileio.UserInput;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @EqualsAndHashCode(callSuper = true)
 public class Manager extends User {
         private String hireDate;
+        @Getter
         private List<String> subordinates;
 
         public Manager(final UserInput userInput) {
@@ -26,4 +27,5 @@ public class Manager extends User {
                                 ? managerInput.getSubordinates()
                                 : new ArrayList<>();
         }
+
 }

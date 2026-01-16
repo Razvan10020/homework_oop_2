@@ -8,15 +8,21 @@ import enums.ExpertiseArea;
 import enums.Role;
 import enums.Seniority;
 import enums.Status;
+import fileio.ActionComsIn.FilterInput;
 import fileio.ActionInput;
 import fileio.ActionComsIn.AddCommentInput;
+import lombok.Data;
 import lombok.Getter;
 import main.Commands.Comment;
 import main.Commands.Milestone;
 import main.Commands.TestingPhase;
 import main.Users.Developer;
 import main.Users.DeveloperRepartition;
+
+import java.io.File;
+import java.lang.reflect.Type;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,8 +32,10 @@ import java.util.stream.Collectors;
 import java.util.Collections;
 import java.util.Arrays;
 
+import main.Users.User;
 import main.utils.Views; // Added import
 
+@Data
 public class TicketManager {
     private TestingPhase testingPhase = new TestingPhase();
     private final List<Ticket> tickets = new ArrayList<>();
@@ -52,6 +60,7 @@ public class TicketManager {
                     ticket -> ticket
             ));
 
+    //crearea harti de milestonuri in functie de titlu
     /**
      * Raporteaza un ticket. Returneaza mesaj de eroare daca e cazul,
      * altfel returneaza null.
@@ -642,7 +651,7 @@ public class TicketManager {
 
     // Helper methods for Assignment Logic
 
-    private boolean canHandleExpertise(final Developer dev, final Ticket ticket) {
+    boolean canHandleExpertise(final Developer dev, final Ticket ticket) {
         ExpertiseArea devArea = dev.getExpertiseArea();
         ExpertiseArea ticketArea = ticket.getExpertiseArea();
         if (devArea == ExpertiseArea.FULLSTACK) {
@@ -683,7 +692,7 @@ public class TicketManager {
         return String.join(", ", areas);
     }
 
-    private boolean canHandleSeniority(final Developer dev, final Ticket ticket) {
+    boolean canHandleSeniority(final Developer dev, final Ticket ticket) {
         BusinessPriority priority = ticket.getBusinessPriority();
         Seniority seniority = dev.getSeniority();
 
@@ -740,7 +749,7 @@ public class TicketManager {
         return false;
     }
 
-    private boolean isMilestoneBlocked(final String milestoneName) {
+    boolean isMilestoneBlocked(final String milestoneName) {
          if (milestoneName == null || milestoneName.isEmpty()) {
              return false;
          }
