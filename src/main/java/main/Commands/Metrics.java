@@ -1,7 +1,6 @@
 package main.Commands;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import enums.BusinessPriority;
 import enums.RiskGrade;
@@ -14,10 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class CustomerImpactReportGenerator {
+public class Metrics {
     private final Map<Integer, Ticket> ticketIdMap;
 
-    public CustomerImpactReportGenerator(final TicketManager ticketManager) {
+    public Metrics(final TicketManager ticketManager) {
         this.ticketIdMap = ticketManager.getTicketIdMap();
     }
 

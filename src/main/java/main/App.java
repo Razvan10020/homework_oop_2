@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import enums.Role;
 import fileio.ActionInput;
 import fileio.UserInput;
-import main.Commands.CustomerImpactReportGenerator;
+import main.Commands.Metrics;
 
 import java.io.File;
 import java.io.IOException;
@@ -233,11 +233,11 @@ public final class App {
                 ticketManager.viewNotifications(actionInput, userManger, response, mapper);
             }
             case "generateCustomerImpactReport" -> {
-                CustomerImpactReportGenerator customerImpactReportGenerator = new CustomerImpactReportGenerator(ticketManager);
+                Metrics customerImpactReportGenerator = new Metrics(ticketManager);
                 customerImpactReportGenerator.generateCustomerImpactReport(actionInput, response, mapper);
             }
             case "generateTicketRiskReport" -> {
-                CustomerImpactReportGenerator customerImpactReportGenerator = new CustomerImpactReportGenerator(ticketManager);
+                Metrics customerImpactReportGenerator = new Metrics(ticketManager);
                 customerImpactReportGenerator.generateCustomerImpactReport(actionInput, response, mapper);
             }
             default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
