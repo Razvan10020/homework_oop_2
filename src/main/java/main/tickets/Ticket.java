@@ -1,10 +1,14 @@
-package main;
+package main.tickets;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonView;
 import enums.BusinessPriority;
+import enums.BusinessValue;
+import enums.CustomerDemand;
 import enums.ExpertiseArea;
+import enums.Frequency;
+import enums.Severity;
 import enums.Status;
 import fileio.ActionInput;
 import lombok.Data;
@@ -20,7 +24,7 @@ import java.util.List;
         "createdAt", "assignedAt", "solvedAt", "assignedTo",
         "reportedBy", "comments"
 })
-public class Ticket {
+public abstract class Ticket {
     //luate din input
     @JsonView(Views.AssignedTicketView.class)
     private final String type;
@@ -79,6 +83,65 @@ public class Ticket {
         this.status = Status.OPEN;
     }
 
+    public abstract double calculateImpact();
+
+    // Helper methods for subclasses
+    protected int getBusinessPriorityValue(BusinessPriority priority) {
+        return switch (priority) {
+            case LOW -> 1;
+            case MEDIUM -> 2;
+            case HIGH -> 3;
+            case CRITICAL -> 4;
+        };
+    }
+
+    protected int getFrequencyValue(Frequency frequency) {
+        if (frequency == null) {
+            return 0;
+        }
+        return switch (frequency) {
+            case RARE -> 1;
+            case OCCASIONAL -> 2;
+            case FREQUENT -> 3;
+            case ALWAYS -> 4;
+        };
+    }
+
+    protected int getSeverityValue(Severity severity) {
+        if (severity == null) {
+            return 0;
+        }
+        return switch (severity) {
+            case MINOR -> 1;
+            case MODERATE -> 2;
+            case SEVERE -> 3;
+        };
+    }
+
+    protected int getBusinessValue(BusinessValue value) {
+        if (value == null) {
+            return 0;
+        }
+        return switch (value) {
+            case S -> 1;
+            case M -> 3;
+            case L -> 6;
+            case XL -> 10;
+        };
+    }
+
+    protected int getCustomerDemandValue(CustomerDemand demand) {
+        if (demand == null) {
+            return 0;
+        }
+        return switch (demand) {
+            case LOW -> 1;
+            case MEDIUM -> 3;
+            case HIGH -> 6;
+            case VERY_HIGH -> 10;
+        };
+    }
+
     /**
      *
      * @param comment passes a comment type object to add to
@@ -87,5 +150,4 @@ public class Ticket {
     public void addCommentToTicket(final Comment comment) {
         this.comments.add(comment);
     }
-
 }

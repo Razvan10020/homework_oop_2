@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import enums.BusinessPriority;
 import enums.Status;
 import lombok.Data;
-import main.Ticket;
+import main.tickets.Ticket;
 
 import java.util.List;
 

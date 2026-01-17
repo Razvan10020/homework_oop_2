@@ -19,6 +19,11 @@ import main.Commands.TestingPhase;
 import main.Users.Developer;
 import main.Users.DeveloperRepartition;
 
+import main.tickets.Bug;
+import main.tickets.FeatureRequest;
+import main.tickets.Ticket;
+import main.tickets.UiFeedback;
+
 import java.io.File;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
@@ -92,8 +97,23 @@ public class TicketManager {
             return "Tickets can only be reported during testing phases.";
         }
 
-        // adauga ticket
-        Ticket ticket = new Ticket(ticketIdCounter++, actionInput);
+        Ticket ticket;
+        String type = actionInput.asParams().getType();
+
+        switch (type) {
+            case "BUG":
+                ticket = new Bug(ticketIdCounter++, actionInput);
+                break;
+            case "FEATURE_REQUEST":
+                ticket = new FeatureRequest(ticketIdCounter++, actionInput);
+                break;
+            case "UI_FEEDBACK":
+                ticket = new UiFeedback(ticketIdCounter++, actionInput);
+                break;
+            default:
+                return "Invalid ticket type.";
+        }
+
         if (ticket.getReportedBy().isEmpty()) {
             ticket.setBusinessPriority(BusinessPriority.LOW);
         }

@@ -51,21 +51,21 @@ public class TestRunner {
                 Arguments.of("02 - Milestone", "input/in_02_test_milestone.json", "out/out_02_test_milestone.json", "ref/ref_02_test_milestone.json", 2),
                 Arguments.of("03 - MilestoneEdgeCase", "input/in_03_test_milestone_edge_case.json", "out/out_03_test_milestone_edge_case.json", "ref/ref_03_test_milestone_edge_case.json", 2),
                 Arguments.of("04 - Assign", "input/in_04_test_assign.json", "out/out_04_test_assign.json", "ref/ref_04_test_assign.json", 2),
-                Arguments.of("05 - AssignEdgeCase", "input/in_05_test_assign_edge_case.json", "out/out_05_test_assign_edge_case.json", "ref/ref_05_test_assign_edge_case.json", 6)
-//                Arguments.of("06 - Comment", "input/in_06_test_comment.json", "out/out_06_test_comment.json", "ref/ref_06_test_comment.json", 2),
-//                Arguments.of("07 - CommentEdgeCase", "input/in_07_test_comment_edge_case.json", "out/out_07_test_comment_edge_case.json", "ref/ref_07_test_comment_edge_case.json", 3),
-//                Arguments.of("08 - StatusChange", "input/in_08_test_status_change.json", "out/out_08_test_status_change.json", "ref/ref_08_test_status_change.json", 3),
-//                Arguments.of("09 - StatusUndoChange", "input/in_09_test_status_undo_change.json", "out/out_09_test_status_undo_change.json", "ref/ref_09_test_status_undo_change.json", 3),
-//                Arguments.of("10 - StatusEdgeCase", "input/in_10_test_status_edge_case.json", "out/out_10_test_status_edge_case.json", "ref/ref_10_test_status_edge_case.json", 4),
-//                Arguments.of("11 - Search", "input/in_11_test_search.json", "out/out_11_test_search.json", "ref/ref_11_test_search.json", 6),
-//                Arguments.of("12 - Notifications", "input/in_12_test_notifications.json", "out/out_12_test_notifications.json", "ref/ref_12_test_notifications.json", 6),
-//                Arguments.of("13 - MetricsCustomerImpact", "input/in_13_test_metrics_customer_impact.json", "out/out_13_test_metrics_customer_impact.json", "ref/ref_13_test_metrics_customer_impact.json", 3),
-//                Arguments.of("14 - MetricsTicketRisk", "input/in_14_test_metrics_ticket_risk.json", "out/out_14_test_metrics_ticket_risk.json", "ref/ref_14_test_metrics_ticket_risk.json", 3),
-//                Arguments.of("15 - MetricsEfficiency", "input/in_15_test_metrics_efficiency.json", "out/out_15_test_metrics_efficiency.json", "ref/ref_15_test_metrics_efficiency.json", 3),
-//                Arguments.of("16 - Stability", "input/in_16_test_stability.json", "out/out_16_test_stability.json", "ref/ref_16_test_stability.json", 3),
-//                Arguments.of("17 - Performance", "input/in_17_test_performance.json", "out/out_17_test_performance.json", "ref/ref_17_test_performance.json", 5),
-//                Arguments.of("18 - Complex", "input/in_18_test_complex.json", "out/out_18_test_complex.json", "ref/ref_18_test_complex.json", 10),
-//                Arguments.of("19 - ComplexEdgeCase", "input/in_19_test_complex_edge_case.json", "out/out_19_test_complex_edge_case.json", "ref/ref_19_test_complex_edge_case.json", 12)
+                Arguments.of("05 - AssignEdgeCase", "input/in_05_test_assign_edge_case.json", "out/out_05_test_assign_edge_case.json", "ref/ref_05_test_assign_edge_case.json", 6),
+               Arguments.of("06 - Comment", "input/in_06_test_comment.json", "out/out_06_test_comment.json", "ref/ref_06_test_comment.json", 2),
+               Arguments.of("07 - CommentEdgeCase", "input/in_07_test_comment_edge_case.json", "out/out_07_test_comment_edge_case.json", "ref/ref_07_test_comment_edge_case.json", 3),
+                Arguments.of("08 - StatusChange", "input/in_08_test_status_change.json", "out/out_08_test_status_change.json", "ref/ref_08_test_status_change.json", 3),
+                Arguments.of("09 - StatusUndoChange", "input/in_09_test_status_undo_change.json", "out/out_09_test_status_undo_change.json", "ref/ref_09_test_status_undo_change.json", 3),
+                Arguments.of("10 - StatusEdgeCase", "input/in_10_test_status_edge_case.json", "out/out_10_test_status_edge_case.json", "ref/ref_10_test_status_edge_case.json", 4),
+                Arguments.of("11 - Search", "input/in_11_test_search.json", "out/out_11_test_search.json", "ref/ref_11_test_search.json", 6),
+                Arguments.of("12 - Notifications", "input/in_12_test_notifications.json", "out/out_12_test_notifications.json", "ref/ref_12_test_notifications.json", 6),
+                Arguments.of("13 - MetricsCustomerImpact", "input/in_13_test_metrics_customer_impact.json", "out/out_13_test_metrics_customer_impact.json", "ref/ref_13_test_metrics_customer_impact.json", 3),
+                Arguments.of("14 - MetricsTicketRisk", "input/in_14_test_metrics_ticket_risk.json", "out/out_14_test_metrics_ticket_risk.json", "ref/ref_14_test_metrics_ticket_risk.json", 3),
+                Arguments.of("15 - MetricsEfficiency", "input/in_15_test_metrics_efficiency.json", "out/out_15_test_metrics_efficiency.json", "ref/ref_15_test_metrics_efficiency.json", 3),
+                Arguments.of("16 - Stability", "input/in_16_test_stability.json", "out/out_16_test_stability.json", "ref/ref_16_test_stability.json", 3),
+                Arguments.of("17 - Performance", "input/in_17_test_performance.json", "out/out_17_test_performance.json", "ref/ref_17_test_performance.json", 5),
+                Arguments.of("18 - Complex", "input/in_18_test_complex.json", "out/out_18_test_complex.json", "ref/ref_18_test_complex.json", 10),
+                Arguments.of("19 - ComplexEdgeCase", "input/in_19_test_complex_edge_case.json", "out/out_19_test_complex_edge_case.json", "ref/ref_19_test_complex_edge_case.json", 12)
         );
     }
 

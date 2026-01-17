@@ -10,6 +10,7 @@ import main.Commands.Milestone;
 import main.Users.Developer;
 import main.Users.Manager;
 import main.Users.User;
+import main.tickets.Ticket;
 import main.utils.TicketSearchResult;
 
 import java.util.ArrayList;

@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 public final class UiFeedbackInput extends ParamsInput {
     private String uiElementId;
     private BusinessValue businessValue;
-    private String usabilityScore;
+    private double usabilityScore;
     private String screenshotUrl;
     private String suggestedFix;
 }
