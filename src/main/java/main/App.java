@@ -236,6 +236,10 @@ public final class App {
                 CustomerImpactReportGenerator customerImpactReportGenerator = new CustomerImpactReportGenerator(ticketManager);
                 customerImpactReportGenerator.generateCustomerImpactReport(actionInput, response, mapper);
             }
+            case "generateTicketRiskReport" -> {
+                CustomerImpactReportGenerator customerImpactReportGenerator = new CustomerImpactReportGenerator(ticketManager);
+                customerImpactReportGenerator.generateCustomerImpactReport(actionInput, response, mapper);
+            }
             default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
         }
         return addRepoToOut > 0;

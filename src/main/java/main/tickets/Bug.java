@@ -35,4 +35,15 @@ public class Bug extends Ticket {
 
         return Math.min(100.0, (baseScore * 100.0) / maxScore);
     }
+
+    @Override
+    public double calculateRisk() {
+        double frequencyValue = getFrequencyValue(this.getFrequency());
+        double severityValue = getSeverityValue(this.getSeverity());
+
+        double baseScore = frequencyValue * severityValue;
+        double maxScore = 12.0;
+
+        return Math.min(100.0, (baseScore * 100.0) / maxScore);
+    }
 }

@@ -29,4 +29,14 @@ public class UiFeedback extends Ticket {
 
         return Math.min(100.0, (baseScore * 100.0) / maxScore);
     }
+
+    @Override
+    public double calculateRisk() {
+        double businessValueNum = getBusinessValue(this.getBusinessValue());
+
+        double baseScore = (11 - this.getUsabilityScore()) * businessValueNum;
+        double maxScore = 100.0;
+
+        return Math.min(100.0, (baseScore * 100.0) / maxScore);
+    }
 }

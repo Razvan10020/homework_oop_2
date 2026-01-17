@@ -85,6 +85,8 @@ public abstract class Ticket {
 
     public abstract double calculateImpact();
 
+    public abstract double calculateRisk();
+
     // Helper methods for subclasses
     protected int getBusinessPriorityValue(BusinessPriority priority) {
         return switch (priority) {

@@ -1,8 +1,10 @@
 package main.Commands;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import enums.BusinessPriority;
+import enums.RiskGrade;
 import enums.Status;
 import fileio.ActionInput;
 import main.TicketManager;
@@ -49,6 +51,16 @@ public class CustomerImpactReportGenerator {
         reportNode.set("ticketsByPriority", ticketsByPriorityNode);
 
         // customerImpactByType (simplified with polymorphism)
+        if (actionInput.getCommand().equals("generateCustomerImpactReport")) {
+            customerImpactByTypeNode(reportNode, activeTickets, mapper);
+        }
+        if (actionInput.getCommand().equals("generateTicketRiskReport")) {
+            ticketRiskReportNode(reportNode, activeTickets, mapper);
+        }
+        response.set("report", reportNode);
+    }
+
+    private void customerImpactByTypeNode (final ObjectNode reportNode, List<Ticket> activeTickets, ObjectMapper mapper) {
         ObjectNode customerImpactByTypeNode = mapper.createObjectNode();
         Map<String, Double> avgImpactByType = activeTickets.stream()
                 .collect(Collectors.groupingBy(
@@ -60,8 +72,37 @@ public class CustomerImpactReportGenerator {
             double averageImpact = avgImpactByType.getOrDefault(type, 0.0);
             customerImpactByTypeNode.put(type, Math.round(averageImpact * 100.0) / 100.0);
         });
-        reportNode.set("customerImpactByType", customerImpactByTypeNode);
 
-        response.set("report", reportNode);
+        reportNode.set("customerImpactByType", customerImpactByTypeNode);
+    }
+
+    private void ticketRiskReportNode (final ObjectNode reportNode, final List<Ticket> activeTickets, final ObjectMapper mapper) {
+        ObjectNode ticketRiskReportNode = mapper.createObjectNode();
+        Map<String, Double> avgRiskByType = activeTickets.stream()
+                .collect(Collectors.groupingBy(
+                        Ticket::getType,
+                        Collectors.averagingDouble(Ticket::calculateRisk)
+                ));
+
+        List.of("BUG", "FEATURE_REQUEST", "UI_FEEDBACK").forEach(type -> {
+            double averageRisk = avgRiskByType.getOrDefault(type, 0.0);
+            double roundedAverageRisk = Math.round(averageRisk * 100.0) / 100.0;
+            RiskGrade risk = convertToGrade(roundedAverageRisk);
+            ticketRiskReportNode.put(type, risk.toString());
+        });
+
+        reportNode.set("riskByType", ticketRiskReportNode);
+    }
+
+    private RiskGrade convertToGrade(final double roundedAverageRisk) {
+        if (roundedAverageRisk <= 24) {
+            return RiskGrade.NEGLIGIBLE;
+        } else if (roundedAverageRisk <= 49) {
+            return RiskGrade.MODERATE;
+        } else if (roundedAverageRisk <= 74) {
+            return RiskGrade.SIGNIFICANT;
+        } else {
+            return RiskGrade.MAJOR;
+        }
     }
 }

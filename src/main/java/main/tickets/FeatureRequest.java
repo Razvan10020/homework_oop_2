@@ -31,4 +31,15 @@ public class FeatureRequest extends Ticket {
 
         return Math.min(100.0, (baseScore * 100.0) / maxScore);
     }
+
+    @Override
+    public double calculateRisk() {
+        double businessValueNum = getBusinessValue(this.getBusinessValue());
+        double customerDemandNum = getCustomerDemandValue(this.getCustomerDemand());
+
+        double baseScore = businessValueNum + customerDemandNum;
+        double maxScore = 20.0;
+
+        return Math.min(100.0, (baseScore * 100.0) / maxScore);
+    }
 }
