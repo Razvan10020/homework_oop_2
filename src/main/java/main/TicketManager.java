@@ -24,13 +24,8 @@ import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Collections;
-import java.util.Arrays;
 
 import main.Users.User;
 import main.utils.Views; // Added import
@@ -58,6 +53,14 @@ public class TicketManager {
             .collect(Collectors.toMap(
                     Ticket::getId,
                     ticket -> ticket
+            ));
+    //crearea unei mape de milistonuri cu id ca fiind elementul dupa care le gasim
+    @Getter
+    Map<String, Milestone> milestoneMap = milestones.stream()
+            .collect(Collectors.toMap(
+                    Milestone::getName,
+                    m -> m,
+                    (oldValue, newValue) -> oldValue
             ));
 
     //crearea harti de milestonuri in functie de titlu
@@ -222,6 +225,11 @@ public class TicketManager {
                         });
             }
         }
+        //adaugarea de notificari, new milestone has been created
+        for (String name : milestone.getAssignedDevs()) {
+            User user = userManger.getUser(name);
+            user.setNotifications("New milestone " + milestone.getName() + " has been created with due date " + milestone.getDueDate() + ".");
+        }
 
         //schimbarea assignet to a ticketului odaca cu crearea milestonului
         //inceperea datei de schimbare a prioritatii de bussines
@@ -256,7 +264,7 @@ public class TicketManager {
                                final ObjectNode response, final ObjectMapper mapper) {
         ArrayNode milestonesArray = mapper.createArrayNode();
 
-        updateMilestones(milestones, LocalDate.parse(actionInput.getTimestamp()));
+        updateMilestones(milestones, LocalDate.parse(actionInput.getTimestamp()), userManger);
 
         if (Role.REPORTER.equals(userManger.getRole(actionInput.getUsername()))) {
             response.set("milestones", emptyArray);
@@ -284,7 +292,7 @@ public class TicketManager {
      * @param currentDate
      */
     public void updateMilestones(final List<Milestone> milestones,
-                                 final LocalDate currentDate) {
+                                 final LocalDate currentDate, final UserManger userManger) {
         for (Milestone milestone : milestones) {
             // Update ticket lists first to determine if milestone is completed
             List<Integer> open = new ArrayList<>();
@@ -336,6 +344,19 @@ public class TicketManager {
             } else {
                 milestone.setDaysUntilDue((int) ChronoUnit.DAYS.between(calculationDate, due) + 1);
                 milestone.setOverdueBy(0);
+            }
+            //verificare daca mai este o zi pana la completion notificari
+            if (milestone.getDaysUntilDue() == 2) {
+                String notification = "Milestone " + milestone.getName() + " is due tomorrow. All unresolved tickets are now CRITICAL.";
+
+                for (String devName : milestone.getAssignedDevs()) {
+                    if (devName != null) {
+                        User user = userManger.getUser(devName);
+                        if (!user.getNotifications().contains(notification)) {
+                            user.setNotifications(notification);
+                        }
+                    }
+                }
             }
 
             // Update completion percentage
@@ -899,7 +920,7 @@ public class TicketManager {
                     .action(enums.Action.STATUS_CHANGED)
                     .build());
             if (newStatus == Status.CLOSED) {
-                checkMilestoneDeblocking(ticket.getAssignedMilestone(), actionInput.getTimestamp());
+                checkMilestoneDeblocking(ticket.getAssignedMilestone(), actionInput.getTimestamp(), userManger);
             }
         }
 
@@ -1037,7 +1058,7 @@ public class TicketManager {
         response.set("ticketHistory", ticketHistoryArray);
     }
 
-    private void checkMilestoneDeblocking(final String milestoneName, final String timestamp) {
+    private void checkMilestoneDeblocking(final String milestoneName, final String timestamp, final UserManger userManger) {
         if (milestoneName == null || milestoneName.isEmpty()) {
             return;
         }
@@ -1066,9 +1087,37 @@ public class TicketManager {
                             .findFirst().ifPresent(m -> {
                                 m.setBlocked(false);
                                 // Notifications might be needed here later
+                                for (String username : m.getAssignedDevs()) {
+                                    User user = userManger.getUser(username);
+                                    if (m.getDaysUntilDue() <= 0) {
+                                        user.setNotifications("Milestone " + m.getName() + " was unblocked after due date. All active tickets are now CRITICAL.");
+                                    }
+                                }
                             });
                 }
             }
         }
+    }
+
+    public void viewNotifications(final ActionInput actionInput, final UserManger userManger,
+                                  final ObjectNode response, final ObjectMapper mapper) {
+
+        User user = userManger.getUser(actionInput.getUsername());
+        ArrayNode notificationsArray = mapper.createArrayNode();
+
+        if (user == null) {
+            response.put("error", "User not found");
+            return;
+        }
+
+        if (user.getNotifications() != null) {
+            for (String notification : user.getNotifications()) {
+                notificationsArray.add(notification);
+            }
+
+            user.getNotifications().clear();
+        }
+
+        response.set("notifications", notificationsArray);
     }
 }

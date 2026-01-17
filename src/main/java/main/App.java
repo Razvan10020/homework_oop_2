@@ -10,6 +10,7 @@ import fileio.UserInput;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,6 +93,7 @@ public final class App {
 
                 boolean shouldAdd = processCommand(actionInput, userManger,
                         ticketManager, response, mapper);
+                ticketManager.updateMilestones(ticketManager.getMilestones(), LocalDate.parse(actionInput.getTimestamp()), userManger);
 
                 if ("lostInvestors".equals(actionInput.getCommand())
                         && !response.has("error")) {
@@ -225,6 +227,12 @@ public final class App {
             case "search" -> {
                Search s = new Search(ticketManager);
                s.search(actionInput,userManger, response, mapper);
+            }
+            case "viewNotifications" -> {
+                ticketManager.viewNotifications(actionInput, userManger, response, mapper);
+            }
+            case "generateCustomerImpactReport" -> {
+
             }
             default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
         }
