@@ -6,6 +6,7 @@ import enums.CustomerDemand;
 import fileio.ActionInput;
 import fileio.TicketInput.FeatureRequestInput;
 import lombok.Getter;
+import main.visitors.TicketVisitor;
 
 @Getter
 public class FeatureRequest extends Ticket {
@@ -19,6 +20,15 @@ public class FeatureRequest extends Ticket {
         FeatureRequestInput params = (FeatureRequestInput) actionInput.asParams();
         this.businessValue = params.getBusinessValue();
         this.customerDemand = params.getCustomerDemand();
+    }
+
+    /**
+     * Accepts a visitor to perform an operation on this feature request ticket.
+     * @param visitor The visitor.
+     */
+    @Override
+    public void accept(final TicketVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

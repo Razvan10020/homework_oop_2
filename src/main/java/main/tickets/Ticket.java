@@ -14,6 +14,7 @@ import fileio.ActionInput;
 import lombok.Data;
 import main.Commands.Comment;
 import main.utils.Views;
+import main.visitors.TicketVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,6 +83,12 @@ public abstract class Ticket {
         this.createdAt = actionInput.getTimestamp();
         this.status = Status.OPEN;
     }
+
+    /**
+     * Accepts a visitor to perform an operation on this ticket.
+     * @param visitor The visitor performing the operation.
+     */
+    public abstract void accept(final TicketVisitor visitor);
 
     public abstract double calculateImpact();
 

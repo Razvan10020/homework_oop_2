@@ -6,6 +6,7 @@ import enums.Severity;
 import fileio.ActionInput;
 import fileio.TicketInput.BugInput;
 import lombok.Getter;
+import main.visitors.TicketVisitor;
 
 @Getter
 public class Bug extends Ticket {
@@ -22,6 +23,15 @@ public class Bug extends Ticket {
         this.frequency = params.getFrequency();
         this.severity = params.getSeverity();
         this.environment = params.getEnvironment();
+    }
+
+    /**
+     * Accepts a visitor to perform an operation on this bug ticket.
+     * @param visitor The visitor.
+     */
+    @Override
+    public void accept(final TicketVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override

@@ -8,6 +8,8 @@ import enums.Role;
 import fileio.ActionInput;
 import fileio.UserInput;
 import main.Commands.Metrics;
+import main.tickets.Ticket;
+import main.visitors.StabilityReportVisitor;
 
 import java.io.File;
 import java.io.IOException;
@@ -229,7 +231,7 @@ public final class App {
             }
             case "search" -> {
                Search s = new Search(ticketManager);
-               s.search(actionInput,userManger, response, mapper);
+               s.search(actionInput, userManger, response, mapper);
             }
             case "viewNotifications" -> {
                 ticketManager.viewNotifications(actionInput, userManger, response, mapper);
@@ -242,6 +244,18 @@ public final class App {
             }
             case "generateResolutionEfficiencyReport" -> {
                 metrics.generateResolutionEfficiencyReport(actionInput, response, mapper);
+            }
+            case "appStabilityReport" -> {
+                Role role = userManger.getRole(actionInput.getUsername());
+                if (!Role.MANAGER.equals(role)) {
+                    response.put("error", "Only managers can execute this command.");
+                    break;
+                }
+                StabilityReportVisitor visitor = new StabilityReportVisitor();
+                for (Ticket ticket : ticketManager.getTickets()) {
+                    ticket.accept(visitor);
+                }
+                response.set("report", visitor.getReport(mapper));
             }
 
             default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());

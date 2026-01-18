@@ -5,6 +5,7 @@ import enums.BusinessValue;
 import fileio.ActionInput;
 import fileio.TicketInput.UiFeedbackInput;
 import lombok.Getter;
+import main.visitors.TicketVisitor;
 
 @Getter
 public class UiFeedback extends Ticket {
@@ -18,6 +19,15 @@ public class UiFeedback extends Ticket {
         UiFeedbackInput params = (UiFeedbackInput) actionInput.asParams();
         this.businessValue = params.getBusinessValue();
         this.usabilityScore = params.getUsabilityScore();
+    }
+
+    /**
+     * Accepts a visitor to perform an operation on this UI feedback ticket.
+     * @param visitor The visitor.
+     */
+    @Override
+    public void accept(final TicketVisitor visitor) {
+        visitor.visit(this);
     }
 
     @Override
