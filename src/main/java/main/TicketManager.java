@@ -8,32 +8,28 @@ import enums.ExpertiseArea;
 import enums.Role;
 import enums.Seniority;
 import enums.Status;
-import fileio.ActionComsIn.FilterInput;
-import fileio.ActionInput;
 import fileio.ActionComsIn.AddCommentInput;
+import fileio.ActionInput;
 import lombok.Data;
 import lombok.Getter;
 import main.Commands.Comment;
+import main.Commands.Metrics; // Import Metrics class
 import main.Commands.Milestone;
 import main.Commands.TestingPhase;
 import main.Users.Developer;
 import main.Users.DeveloperRepartition;
-
+import main.Users.User;
+import main.UserManger; // Added UserManger import
 import main.tickets.Bug;
 import main.tickets.FeatureRequest;
 import main.tickets.Ticket;
 import main.tickets.UiFeedback;
+import main.utils.Views;
 
-import java.io.File;
-import java.lang.reflect.Type;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import main.Users.User;
-import main.utils.Views; // Added import
 
 @Data
 public class TicketManager {

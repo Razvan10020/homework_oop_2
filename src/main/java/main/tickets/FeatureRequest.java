@@ -33,7 +33,7 @@ public class FeatureRequest extends Ticket {
     }
 
     @Override
-    public double calculateRisk() {
+    public double calculateRiskScore() {
         double businessValueNum = getBusinessValue(this.getBusinessValue());
         double customerDemandNum = getCustomerDemandValue(this.getCustomerDemand());
 
@@ -41,5 +41,16 @@ public class FeatureRequest extends Ticket {
         double maxScore = 20.0;
 
         return Math.min(100.0, (baseScore * 100.0) / maxScore);
+    }
+
+    @Override
+    public double calculateEfficiencyScore(long daysToResolve) {
+        if (daysToResolve == 0) {
+            return 0;
+        }
+        double businessValueNum = getBusinessValue(this.getBusinessValue());
+        double customerDemandNum = getCustomerDemandValue(this.getCustomerDemand());
+
+        return (businessValueNum + customerDemandNum) / daysToResolve;
     }
 }

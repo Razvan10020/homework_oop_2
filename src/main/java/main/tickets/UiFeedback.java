@@ -31,12 +31,22 @@ public class UiFeedback extends Ticket {
     }
 
     @Override
-    public double calculateRisk() {
+    public double calculateRiskScore() {
         double businessValueNum = getBusinessValue(this.getBusinessValue());
 
         double baseScore = (11 - this.getUsabilityScore()) * businessValueNum;
         double maxScore = 100.0;
 
         return Math.min(100.0, (baseScore * 100.0) / maxScore);
+    }
+
+    @Override
+    public double calculateEfficiencyScore(long daysToResolve) {
+        if (daysToResolve == 0) {
+            return 0;
+        }
+        double businessValueNum = getBusinessValue(this.getBusinessValue());
+        
+        return (this.getUsabilityScore() + businessValueNum) / daysToResolve;
     }
 }

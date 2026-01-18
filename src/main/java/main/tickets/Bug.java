@@ -37,7 +37,7 @@ public class Bug extends Ticket {
     }
 
     @Override
-    public double calculateRisk() {
+    public double calculateRiskScore() {
         double frequencyValue = getFrequencyValue(this.getFrequency());
         double severityValue = getSeverityValue(this.getSeverity());
 
@@ -45,5 +45,16 @@ public class Bug extends Ticket {
         double maxScore = 12.0;
 
         return Math.min(100.0, (baseScore * 100.0) / maxScore);
+    }
+
+    @Override
+    public double calculateEfficiencyScore(long daysToResolve) {
+        if (daysToResolve == 0) {
+            return 0;
+        }
+        double frequencyValue = getFrequencyValue(this.getFrequency());
+        double severityValue = getSeverityValue(this.getSeverity());
+
+        return (frequencyValue + severityValue) * 10.0 / daysToResolve;
     }
 }

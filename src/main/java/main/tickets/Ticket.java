@@ -85,7 +85,9 @@ public abstract class Ticket {
 
     public abstract double calculateImpact();
 
-    public abstract double calculateRisk();
+    public abstract double calculateRiskScore();
+
+    public abstract double calculateEfficiencyScore(long daysToResolve);
 
     // Helper methods for subclasses
     protected int getBusinessPriorityValue(BusinessPriority priority) {

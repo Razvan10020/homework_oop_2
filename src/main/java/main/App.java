@@ -80,6 +80,7 @@ public final class App {
 
         // TODO 2: process commands.
         TicketManager ticketManager = new TicketManager();
+        Metrics metrics = new Metrics(ticketManager);
         boolean investorsLost = false;
 
         for (ActionInput actionInput : actionInputs) {
@@ -93,7 +94,7 @@ public final class App {
                 response.put("timestamp", actionInput.getTimestamp());
 
                 boolean shouldAdd = processCommand(actionInput, userManger,
-                        ticketManager, response, mapper);
+                        ticketManager, response, mapper, metrics);
                 ticketManager.updateMilestones(ticketManager.getMilestones(), LocalDate.parse(actionInput.getTimestamp()), userManger);
 
                 if ("lostInvestors".equals(actionInput.getCommand())
@@ -137,7 +138,8 @@ public final class App {
                                           final UserManger userManger,
                                           final TicketManager ticketManager,
                                           final ObjectNode response,
-                                          final ObjectMapper mapper) {
+                                          final ObjectMapper mapper,
+                                          final Metrics metrics) {
         int addRepoToOut = 1;
 
         switch (actionInput.getCommand()) {
@@ -233,13 +235,15 @@ public final class App {
                 ticketManager.viewNotifications(actionInput, userManger, response, mapper);
             }
             case "generateCustomerImpactReport" -> {
-                Metrics customerImpactReportGenerator = new Metrics(ticketManager);
-                customerImpactReportGenerator.generateCustomerImpactReport(actionInput, response, mapper);
+                metrics.generateCustomerImpactReport(actionInput, response, mapper);
             }
             case "generateTicketRiskReport" -> {
-                Metrics customerImpactReportGenerator = new Metrics(ticketManager);
-                customerImpactReportGenerator.generateCustomerImpactReport(actionInput, response, mapper);
+                metrics.generateCustomerImpactReport(actionInput, response, mapper);
             }
+            case "generateResolutionEfficiencyReport" -> {
+                metrics.generateResolutionEfficiencyReport(actionInput, response, mapper);
+            }
+
             default -> System.out.println("Comandă necunoscută: " + actionInput.getCommand());
         }
         return addRepoToOut > 0;
